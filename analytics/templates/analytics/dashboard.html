@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block header_title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <div class="welcome-section">
+            <h2 class="fw-bold mb-1 fade-in-up">
+                {{ greeting }},
+                <span class="text-gradient">{{ user.username|title }}</span>
+            </h2>
+            <p class="text-muted mb-0 fade-in-up delay-1">Here's what's happening on your farm.</p>
+        </div>
+        <style>
+            .text-gradient {
+                background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .fade-in-up {
+                opacity: 0;
+                transform: translateY(20px);
+                animation: fadeInUp 0.8s ease-out forwards;
+            }
+
+            .delay-1 {
+                animation-delay: 0.2s;
+            }
+
+            @keyframes fadeInUp {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        </style>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'analytics-export-csv' %}" class="btn btn-outline-primary me-2">
+            📥 Export CSV
+        </a>
+        <a href="{% url 'analytics-export-pdf' %}" class="btn btn-outline-danger">
+            📄 Export PDF
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Total Videos</div>
+            <div class="card-body">
+                <h1 class="card-title">{{ total_videos }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Total Detections</div>
+            <div class="card-body">
+                <h1 class="card-title">{{ total_detections }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-header">Total Alerts</div>
+            <div class="card-body">
+                <h1 class="card-title">{{ total_alerts }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-header">Critical/High Severity</div>
+            <div class="card-body">
+                <h1 class="card-title">{{ high_sev }}</h1>
+                <small>Med: {{ medium_sev }} | Low: {{ low_sev }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-light fw-bold d-flex justify-content-between align-items-center">
+                <span>📈 Detections Over Time</span>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="?range=day"
+                        class="btn btn-outline-primary {% if time_range == 'day' %}active{% endif %}">Day</a>
+                    <a href="?range=week"
+                        class="btn btn-outline-primary {% if time_range == 'week' %}active{% endif %}">Week</a>
+                    <a href="?range=month"
+                        class="btn btn-outline-primary {% if time_range == 'month' %}active{% endif %}">Month</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 350px; width: 100%;">
+                    <canvas id="timeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-light fw-bold">⚠️ Severity Distribution</div>
+            <div class="card-body">
+                <div style="position: relative; height: 350px; width: 100%; display: flex; justify-content: center;">
+                    <canvas id="severityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-light fw-bold">🚜 Farmland Intrusion Count</div>
+            <div class="card-body">
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="farmChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-light fw-bold">🦁 Animal Type Distribution</div>
+            <div class="card-body">
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="animalChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Parse JSON data from context
+    const dates = JSON.parse('{{ dates_json|safe }}');
+    const dateCounts = JSON.parse('{{ date_counts_json|safe }}');
+
+    const sevLabels = JSON.parse('{{ sev_labels_json|safe }}');
+    const sevData = JSON.parse('{{ sev_data_json|safe }}');
+
+    const farmLabels = JSON.parse('{{ farm_labels_json|safe }}');
+    const farmData = JSON.parse('{{ farm_data_json|safe }}');
+
+    const animalLabels = JSON.parse('{{ animal_labels_json|safe }}');
+    const animalData = JSON.parse('{{ animal_data_json|safe }}');
+
+    // Common Options for better rendering
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12, padding: 15 }
+            }
+        }
+    };
+
+    // 1. Time Chart (Line)
+    new Chart(document.getElementById('timeChart'), {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Detections',
+                data: dateCounts,
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0.3,
+                fill: true,
+                pointRadius: 3
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 2. Severity Chart (Doughnut - cleaner than Pie for dashboard)
+    new Chart(document.getElementById('severityChart'), {
+        type: 'doughnut',
+        data: {
+            labels: sevLabels,
+            datasets: [{
+                data: sevData,
+                backgroundColor: ['#dc3545', '#ffc107', '#0d6efd', '#198754'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            ...commonOptions,
+            cutout: '60%',
+        }
+    });
+
+    // 3. Farmland Chart (Bar)
+    new Chart(document.getElementById('farmChart'), {
+        type: 'bar',
+        data: {
+            labels: farmLabels,
+            datasets: [{
+                label: 'Intrusions',
+                data: farmData,
+                backgroundColor: '#198754',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 4. Animal Chart (Horizontal Bar for better label reading)
+    new Chart(document.getElementById('animalChart'), {
+        type: 'bar',
+        indexAxis: 'y',
+        data: {
+            labels: animalLabels,
+            datasets: [{
+                label: 'Count',
+                data: animalData,
+                backgroundColor: '#fd7e14',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                x: { beginAtZero: true, grid: { borderDash: [2, 2] } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+{% endblock %}

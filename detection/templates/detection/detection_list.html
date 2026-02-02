@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Detections{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">🔍 All Detections</h5>
+        <span class="badge bg-primary rounded-pill">{{ detections.count }} Events</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Animal</th>
+                        <th>Confidence</th>
+                        <th>Severity</th>
+                        <th>Farmland</th>
+                        <th>Video ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for det in detections %}
+                    <tr>
+                        <td><i class="bi bi-clock"></i> {{ det.created_at|date:"Y-m-d H:i:s" }}</td>
+                        <td>{{ det.animal_type }}</td>
+                        <td>{{ det.confidence|floatformat:2 }}</td>
+                        <td>
+                            {% if det.severity == 'Critical' %}
+                            <span class="badge bg-danger">Critical</span>
+                            {% elif det.severity == 'High' %}
+                            <span class="badge bg-warning text-dark">High</span>
+                            {% elif det.severity == 'Medium' %}
+                            <span class="badge bg-info text-dark">Medium</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Low</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ det.video.farmland.name }}</td>
+                        <td><a href="{% url 'video-detail' det.video.id %}">#{{ det.video.id }}</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No detections recorded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

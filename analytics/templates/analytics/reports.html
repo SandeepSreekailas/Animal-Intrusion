@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <h2 class="mb-4">📂 Reports & Exports</h2>
+
+        <div class="row">
+            <!-- CSV Export Card -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center p-5">
+                        <div class="display-4 mb-3 text-primary">📑</div>
+                        <h4 class="card-title">CSV Dataset</h4>
+                        <p class="card-text text-muted">
+                            Download the full raw dataset of all detection events.
+                            Ideal for external analysis in Excel or other tools.
+                        </p>
+                        <a href="{% url 'analytics-export-csv' %}" class="btn btn-primary mt-3">
+                            <i class="bi bi-download"></i> Download CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Report Card -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center p-5">
+                        <div class="display-4 mb-3 text-danger">📄</div>
+                        <h4 class="card-title">PDF Summary</h4>
+                        <p class="card-text text-muted">
+                            Generate a professional PDF summary report including recent
+                            critical detections and aggregate statistics.
+                        </p>
+                        <a href="{% url 'analytics-export-pdf' %}" class="btn btn-outline-danger mt-3">
+                            <i class="bi bi-file-pdf"></i> Generate PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

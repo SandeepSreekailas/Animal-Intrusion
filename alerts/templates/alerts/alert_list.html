@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-md-12">
+        <h2 class="section-title">Detection Alerts</h2>
+
+        {% if alerts %}
+        <div class="card shadow-lg p-4">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Severity</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alert in alerts %}
+                        <tr class="{% if not alert.is_read %}fw-bold table-active{% endif %}">
+                            <td>
+                                {% if alert.severity == 'Critical' %}
+                                <span class="badge bg-danger">Critical</span>
+                                {% elif alert.severity == 'High' %}
+                                <span class="badge bg-warning text-dark">High</span>
+                                {% elif alert.severity == 'Medium' %}
+                                <span class="badge bg-info">Medium</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Info</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ alert.message }}</td>
+                            <td>{{ alert.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if alert.is_read %}
+                                <span class="text-muted">Read</span>
+                                {% else %}
+                                <span class="text-primary">Unread</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not alert.is_read %}
+                                <form action="{% url 'mark-alert-read' alert.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Mark Read</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info shadow-sm">No alerts found.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

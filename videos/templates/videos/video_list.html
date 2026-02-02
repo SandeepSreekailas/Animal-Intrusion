@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}My Videos{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h2 class="mb-0">📹 Video Feed</h2>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'video-create' %}" class="btn btn-primary"><i class="bi bi-upload"></i> Upload New Video</a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 120px;">Thumbnail</th>
+                        <th>Details</th>
+                        <th>Farmland</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for video in videos %}
+                    <tr>
+                        <td>
+                            {% if video.thumbnail %}
+                            <img src="{{ video.thumbnail.url }}" class="img-fluid rounded border"
+                                style="max-height: 60px; width: auto;" alt="Thumbnail">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted border"
+                                style="height: 60px; width: 80px;">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'video-detail' video.pk %}"
+                                class="fw-bold text-decoration-none text-dark">{{ video.video_file.name }}</a>
+                            <div class="small text-muted">
+                                <span class="badge bg-secondary text-light">{{ video.resolution|default:"UNK" }}</span>
+                                <span class="ms-1">{{ video.fps|floatformat:1 }} FPS</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ video.farmland.name }}</span>
+                        </td>
+                        <td>{{ video.duration|default:"-" }}s</td>
+                        <td>
+                            {% if video.status == 'Processed' %}
+                            <span class="badge bg-success rounded-pill">Processed</span>
+                            {% elif video.status == 'Processing' %}
+                            <span class="badge bg-warning text-dark rounded-pill">Processing</span>
+                            {% elif video.status == 'Pending' %}
+                            <span class="badge bg-secondary rounded-pill">Pending</span>
+                            {% else %}
+                            <span class="badge bg-danger rounded-pill">{{ video.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'video-detail' video.pk %}" class="btn btn-sm btn-outline-primary me-1"><i
+                                    class="bi bi-eye"></i> View</a>
+                            <a href="{% url 'video-delete' video.pk %}" class="btn btn-sm btn-outline-danger"><i
+                                    class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <div class="mb-3"><i class="bi bi-camera-video display-4 text-secondary"></i></div>
+                            <h5>No videos uploaded yet.</h5>
+                            <a href="{% url 'video-create' %}" class="btn btn-outline-primary mt-2">Upload Your First
+                                Video</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

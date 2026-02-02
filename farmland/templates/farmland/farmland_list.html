@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}My Farmlands{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h2 class="mb-0">🌾 My Farmlands</h2>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'farmland-create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add New Farmland</a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Size (Acres)</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for farmland in farmlands %}
+                    <tr>
+                        <td class="fw-bold">{{ farmland.name }}</td>
+                        <td><i class="bi bi-geo-alt text-danger"></i> {{ farmland.location }}</td>
+                        <td>{{ farmland.size_acres }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'farmland-update' farmland.pk %}"
+                                class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i> Edit</a>
+                            <a href="{% url 'farmland-delete' farmland.pk %}" class="btn btn-sm btn-outline-danger"><i
+                                    class="bi bi-trash"></i> Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <div class="mb-3"><i class="bi bi-tree display-4 text-secondary"></i></div>
+                            <h5>No farmlands added yet.</h5>
+                            <a href="{% url 'farmland-create' %}" class="btn btn-outline-primary mt-2">Add Your First
+                                Farmland</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
