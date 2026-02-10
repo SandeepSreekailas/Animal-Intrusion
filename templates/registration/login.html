@@ -1,251 +1,296 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Login - FarmGuard{% endblock %}
+{% block title %}System Login // AnimalGuard{% endblock %}
 
 {% block content %}
 <style>
-    /* Custom Animations & Layout */
+    /* --- CYBERPUNK AUTH THEME --- */
+    :root {
+        --neon-blue: #0d6efd;
+        --neon-cyan: #00f2ff;
+        --neon-red: #ff3333;
+        --bg-black: #050505;
+        --glass-black: rgba(0, 0, 0, 0.85);
+    }
+
     body {
+        background-color: var(--bg-black);
+        font-family: 'Nunito', sans-serif;
         overflow-x: hidden;
-        background-color: #fff;
-    }
-
-    .login-container {
         min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
     }
 
-    /* Left Side: The Image */
-    .bg-image {
-        /* Placeholder image - Replace with your farm image URL or static file */
-        background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop');
-        background-size: cover;
-        background-position: center;
-        min-height: 100vh;
-        position: relative;
-    }
-
-    /* Optional overlay to make text pop if you add text over the image */
-    .bg-overlay {
-        position: absolute;
+    /* BACKGROUND VIDEO LAYER */
+    .video-bg {
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+        object-fit: cover;
+        opacity: 0.6;
+        filter: contrast(1.2) saturate(0) sepia(100%) hue-rotate(190deg) saturate(2);
+        z-index: -1;
     }
 
-    /* Right Side: The Form */
-    .login-section {
+    .neon-overlay {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle, transparent 20%, #000 90%),
+                    linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.9));
+        z-index: -1;
+    }
+
+    /* --- NEW: STYLISH "RETURN TO BASE" BUTTON --- */
+    .hud-back-btn {
+        position: fixed;
+        top: 40px;
+        left: 40px;
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        z-index: 100;
+        transition: 0.3s;
+    }
+
+    .hud-back-btn .icon-box {
+        width: 45px;
+        height: 45px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
         justify-content: center;
-        padding: 4rem;
-        background: #ffffff;
-    }
-
-    /* Animation Keyframes */
-    @keyframes slideInUp {
-        from {
-            transform: translateY(30px);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-
-    .animate-entry {
-        animation: slideInUp 0.8s ease-out forwards;
-    }
-
-    /* Form Styling */
-    .form-control {
-        border: 2px solid #eef2f6;
-        border-radius: 12px;
-        padding: 1rem 1rem;
-        background-color: #f8f9fa;
+        color: white;
+        font-size: 1.2rem;
+        /* Sci-Fi Angled Shape */
+        clip-path: polygon(30% 0, 100% 0, 100% 70%, 70% 100%, 0 100%, 0 30%);
         transition: all 0.3s ease;
     }
 
-    .form-control:focus {
-        border-color: #2e7d32;
-        /* Farm green theme */
-        background-color: #fff;
-        box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
+    .hud-back-btn .text-label {
+        margin-left: 15px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 700;
+        transition: all 0.3s ease;
+        opacity: 0.8;
     }
 
-    .form-floating>label {
-        padding-left: 1rem;
-        padding-top: 0.6rem;
+    /* Hover Effects for Back Button */
+    .hud-back-btn:hover .icon-box {
+        border-color: var(--neon-cyan);
+        color: var(--neon-cyan);
+        box-shadow: 0 0 15px var(--neon-cyan);
+        transform: scale(1.1);
+        background: rgba(0, 242, 255, 0.1);
     }
 
-    .btn-login {
-        background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
-        border: none;
-        border-radius: 12px;
+    .hud-back-btn:hover .text-label {
+        color: white;
+        text-shadow: 0 0 10px var(--neon-cyan);
+        transform: translateX(10px); /* Slide text right */
+        opacity: 1;
+    }
+
+    /* THE AUTH CARD (Glass Effect) */
+    .auth-card {
+        background: var(--glass-black);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 242, 255, 0.3);
+        padding: 3rem;
+        box-shadow: 0 0 40px rgba(0, 242, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        max-width: 450px;
+        clip-path: polygon(0 0, 100% 0, 100% 95%, 95% 100%, 0 100%); 
+        margin: 2rem 0;
+    }
+
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan));
+        box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    /* HEADERS */
+    .auth-title {
+        color: white;
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 2rem;
+        letter-spacing: 2px;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 0px var(--neon-blue);
+    }
+
+    .auth-subtitle {
+        color: var(--neon-cyan);
+        text-align: center;
+        font-family: monospace;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 2rem;
+        font-size: 0.8rem;
+    }
+
+    /* FORM FIELDS */
+    .form-control {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #333;
+        color: white;
+        border-radius: 4px;
         padding: 12px;
-        font-size: 1.1rem;
-        transition: transform 0.2s;
+        font-family: monospace;
     }
 
-    .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(46, 125, 50, 0.2);
+    .form-control:focus {
+        background: rgba(0, 242, 255, 0.05);
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+        color: white;
+        outline: none;
     }
 
-    /* Mobile responsiveness */
-    @media (max-width: 991.98px) {
-        .bg-image {
-            display: none;
-            /* Hide image on small screens or make it a top banner */
-        }
-
-        .login-section {
-            padding: 2rem;
-        }
+    .form-label, label {
+        color: #ccc;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: bold;
     }
 
-   .custom-checkbox .form-check-input {
-    /* "em" makes it relative to the font size */
-    width: 1.4em !important;   
-    height: 1.4em !important;  
-    
-    /* This centers it nicely with the text */
-    margin-top: 0.2em !important; 
-    
-    border: 2px solid #ccc;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-    .custom-checkbox .form-check-input:checked {
-        background-color: #2e7d32;
-        /* Farm Green */
-        border-color: #2e7d32;
-    }
-
-    .custom-checkbox .form-check-input:focus {
-        box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
-        /* Green Glow */
-        border-color: #2e7d32;
-    }
-
-    .custom-checkbox .form-check-label {
-        margin-left: 0.5rem;
+    /* BUTTONS */
+    .btn-cyber {
+        background: var(--neon-blue);
+        color: white;
+        width: 100%;
+        padding: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        border: none;
+        clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        transition: 0.3s;
+        margin-top: 1rem;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
         cursor: pointer;
-        font-size: 0.95rem;
-        color: #6c757d;
-        user-select: none;
-        /* Prevents text highlighting when clicking fast */
     }
 
-    /* Custom Checkbox: Green Tick on White Box */
+    .btn-cyber:hover {
+        background: white;
+        color: var(--neon-blue);
+        box-shadow: 0 0 20px var(--neon-blue);
+    }
+
+    .auth-link {
+        color: #888;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: 0.3s;
+    }
+    .auth-link:hover {
+        color: var(--neon-cyan);
+        text-shadow: 0 0 8px var(--neon-cyan);
+    }
+
+    .form-check-input {
+        background-color: transparent;
+        border-color: #555;
+        border-radius: 2px;
+    }
     .form-check-input:checked {
-        background-color: #fff;
-        /* Box stays white */
-        border-color: #2e7d32;
-        /* Border turns green */
-
-        /* This SVG code draws the specific Green Tick */
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%232e7d32' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
-    }
-
-    /* Green glow focus ring */
-    .form-check-input:focus {
-        border-color: #2e7d32;
-        box-shadow: 0 0 0 0.25rem rgba(125, 124, 46, 0.15);
+        background-color: var(--neon-cyan);
+        border-color: var(--neon-cyan);
     }
 </style>
 
-<div class="container-fluid p-0 login-container">
-    <div class="row g-0">
+<video class="video-bg" autoplay muted loop playsinline>
+    <source src="{% static 'core/video/intro.mp4' %}" type="video/mp4">
+</video>
+<div class="neon-overlay"></div>
 
-        <div class="col-lg-7 d-none d-lg-block bg-image">
-            <div class="bg-overlay"></div>
-            <div class="d-flex h-100 flex-column justify-content-end p-5 text-white"
-                style="position: relative; z-index: 2;">
-                <h2 class="fw-bold display-6">Protecting Your Harvest</h2>
-                <p class="lead">Smart detection systems for modern farming.</p>
+<a href="{% url 'home' %}" class="hud-back-btn">
+    <div class="icon-box">
+        <i class="bi bi-chevron-left"></i>
+    </div>
+    <span class="text-label">RETURN TO BASE</span>
+</a>
+
+<div class="container d-flex justify-content-center">
+    <div class="auth-card">
+        
+        <h1 class="auth-title">System Login</h1>
+        <p class="auth-subtitle">Identify Yourself_</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger bg-transparent text-danger border-danger mb-3" style="font-family: monospace;">
+                {% for error in form.non_field_errors %}
+                   ⚠ {{ error }}
+                {% endfor %}
             </div>
-        </div>
+            {% endif %}
 
-        <div class="col-lg-5 login-section">
-            <div class="w-100 mx-auto animate-entry" style="max-width: 450px;">
-
-                <div class="mb-5">
-                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 mb-3">
-                        <i class="bi bi-shield-lock me-2"></i>Secure Access
-                    </span>
-                    <h1 class="fw-bold text-dark">Welcome Back! 👋</h1>
-                    <p class="text-muted mt-2">Enter your credentials to access the dashboard.</p>
+            {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="text-danger small mt-1" style="font-family: monospace;">
+                    {{ field.errors.0 }}
                 </div>
-
-                <form method="post" novalidate>
-                    {% csrf_token %}
-
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4">
-                        {% for error in form.non_field_errors %}
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-exclamation-octagon-fill me-2"></i> {{ error }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    {% for field in form %}
-                    <div class="form-floating mb-4">
-                        {{ field }}
-                        <label for="{{ field.id_for_label }}" class="text-muted">{{ field.label }}</label>
-
-                        {% for error in field.errors %}
-                        <div class="text-danger small mt-2 ps-1">
-                            <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endfor %}
-
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div class="form-check custom-checkbox d-flex align-items-center">
-                            <input class="form-check-input" type="checkbox" value="" id="rememberMe">
-                            <label class="form-check-label" for="rememberMe">
-                                Remember me
-                            </label>
-                        </div>
-
-                        <a href="#" class="text-decoration-none small text-success fw-bold hover-link">
-                            Forgot password?
-                        </a>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-login text-white fw-bold shadow-sm">
-                            Sign In
-                        </button>
-                    </div>
-                </form>
-
-                <div class="text-center mt-5 text-muted">
-                    <p>Don't have an account yet? <a href="{% url 'register' %}"
-                            class="text-success fw-bold text-decoration-none">Create Account</a></p>
-                </div>
+                {% endif %}
             </div>
+            {% endfor %}
+
+            <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                    <label class="form-check-label text-muted small" for="rememberMe">Remember</label>
+                </div>
+                <a href="#" class="auth-link small">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn-cyber">
+                INITIATE SESSION
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-muted small mb-0">NO ACCESS ID?</p>
+            <a href="{% url 'register' %}" class="auth-link fw-bold" style="color: var(--neon-cyan);">CREATE NEW OPERATOR ACCOUNT</a>
         </div>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Select only inputs that are NOT checkboxes or radios
-        var inputs = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), select, textarea');
-        
+        var inputs = document.querySelectorAll('input, select, textarea');
         inputs.forEach(function (input) {
             input.classList.add('form-control');
-            input.placeholder = ' '; // Keeps floating labels working
+            if (input.type !== 'checkbox') {
+                input.placeholder = ' '; 
+            }
         });
     });
 </script>

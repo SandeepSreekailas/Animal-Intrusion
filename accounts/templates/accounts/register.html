@@ -1,226 +1,328 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Register - FarmGuard{% endblock %}
+{% block title %}New Operator // AnimalGuard{% endblock %}
 
 {% block content %}
 <style>
-    /* --- SHARED CSS FROM LOGIN PAGE --- */
+    /* --- CYBERPUNK AUTH THEME (Same as Login) --- */
+    :root {
+        --neon-blue: #0d6efd;
+        --neon-cyan: #00f2ff;
+        --neon-red: #ff3333;
+        --bg-black: #050505;
+        --glass-black: rgba(0, 0, 0, 0.85);
+    }
+
     body {
+        background-color: var(--bg-black);
+        font-family: 'Nunito', sans-serif;
         overflow-x: hidden;
-        background-color: #fff;
-    }
-
-    .login-container {
         min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
     }
 
-    /* Left Side: The Image (Specific for Register) */
-    .bg-image {
-        /* A stable, direct image URL */
-        background-image: url('https://plus.unsplash.com/premium_photo-1663013515332-262f3b2e0908?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-        
-        background-size: cover;
-        background-position: center;
-        min-height: 100vh;
-        position: relative;
-    }
-
-    .bg-overlay {
-        position: absolute;
+    /* BACKGROUND VIDEO LAYER */
+    .video-bg {
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.4));
+        object-fit: cover;
+        opacity: 0.6;
+        filter: contrast(1.2) saturate(0) sepia(100%) hue-rotate(190deg) saturate(2);
+        z-index: -1;
     }
 
-    /* Right Side: The Form */
-    .login-section {
+    .neon-overlay {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle, transparent 20%, #000 90%),
+                    linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.9));
+        z-index: -1;
+    }
+
+    /* --- STYLISH "RETURN TO BASE" BUTTON --- */
+    .hud-back-btn {
+        position: fixed;
+        top: 40px;
+        left: 40px;
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        z-index: 100;
+        transition: 0.3s;
+    }
+
+    .hud-back-btn .icon-box {
+        width: 45px;
+        height: 45px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
         justify-content: center;
-        padding: 4rem;
-        background: #ffffff;
-    }
-
-    /* Animation */
-    @keyframes slideInUp {
-        from { transform: translateY(30px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-
-    .animate-entry {
-        animation: slideInUp 0.8s ease-out forwards;
-    }
-
-    /* Form Inputs */
-    .form-control {
-        border: 2px solid #eef2f6;
-        border-radius: 12px;
-        padding: 1rem 1rem;
-        background-color: #f8f9fa;
+        color: white;
+        font-size: 1.2rem;
+        clip-path: polygon(30% 0, 100% 0, 100% 70%, 70% 100%, 0 100%, 0 30%);
         transition: all 0.3s ease;
     }
 
-    /* File input specific fix */
-    input[type="file"].form-control {
-        padding: 0.8rem;
-        line-height: 1.5;
+    .hud-back-btn .text-label {
+        margin-left: 15px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 700;
+        transition: all 0.3s ease;
+        opacity: 0.8;
+    }
+
+    .hud-back-btn:hover .icon-box {
+        border-color: var(--neon-cyan);
+        color: var(--neon-cyan);
+        box-shadow: 0 0 15px var(--neon-cyan);
+        transform: scale(1.1);
+        background: rgba(0, 242, 255, 0.1);
+    }
+
+    .hud-back-btn:hover .text-label {
+        color: white;
+        text-shadow: 0 0 10px var(--neon-cyan);
+        transform: translateX(10px);
+        opacity: 1;
+    }
+
+    /* THE AUTH CARD */
+    .auth-card {
+        background: var(--glass-black);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 242, 255, 0.3);
+        padding: 3rem;
+        box-shadow: 0 0 40px rgba(0, 242, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        max-width: 550px;
+        clip-path: polygon(0 0, 100% 0, 100% 95%, 95% 100%, 0 100%); 
+        margin: 2rem 0;
+    }
+
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan));
+        box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    /* HEADERS */
+    .auth-title {
+        color: white;
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 2rem;
+        letter-spacing: 2px;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 0px var(--neon-blue);
+    }
+
+    .auth-subtitle {
+        color: var(--neon-cyan);
+        text-align: center;
+        font-family: monospace;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 2rem;
+        font-size: 0.8rem;
+    }
+
+    /* FORM FIELDS */
+    .form-control {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #333;
+        color: white;
+        border-radius: 4px;
+        padding: 12px;
+        font-family: monospace;
     }
 
     .form-control:focus {
-        border-color: #2e7d32;
-        background-color: #fff;
-        box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
+        background: rgba(0, 242, 255, 0.05);
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+        color: white;
+        outline: none;
     }
 
-    .form-floating>label {
-        padding-left: 1rem;
-        padding-top: 0.6rem;
+    input[type="file"].form-control { padding: 8px; }
+
+    .form-label, label {
+        color: #ccc;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: bold;
     }
 
-    /* Button */
-    .btn-login {
-        background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
-        border: none;
-        border-radius: 12px;
+    .form-text {
+        color: rgba(255, 255, 255, 0.5) !important;
+        font-size: 0.75rem;
+        font-family: monospace;
+    }
+
+    /* BUTTONS */
+    .btn-cyber {
+        background: var(--neon-blue);
+        color: white;
+        width: 100%;
         padding: 12px;
-        font-size: 1.1rem;
-        transition: transform 0.2s;
-    }
-
-    .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(46, 125, 50, 0.2);
-    }
-
-    /* Mobile */
-    @media (max-width: 991.98px) {
-        .bg-image { display: none; }
-        .login-section { padding: 2rem; }
-    }
-
-    /* --- RESPONSIVE GREEN CHECKBOX --- */
-    .custom-checkbox .form-check-input {
-        width: 1.1em !important;   
-        height: 1.1em !important;  
-        margin-top: 0.2em !important; 
-        border: 2px solid #ccc;
-        border-radius: 4px;
-        transition: all 0.2s ease;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        border: none;
+        clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        transition: 0.3s;
+        margin-top: 1rem;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
         cursor: pointer;
     }
 
-    .form-check-input:checked {
-        background-color: #fff;
-        border-color: #2e7d32;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%232e7d32' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+    .btn-cyber:hover {
+        background: white;
+        color: var(--neon-blue);
+        box-shadow: 0 0 20px var(--neon-blue);
     }
 
-    .form-check-input:focus {
-        border-color: #2e7d32;
-        box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.15);
+    .auth-link {
+        color: #888;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: 0.3s;
+    }
+    .auth-link:hover {
+        color: var(--neon-cyan);
+        text-shadow: 0 0 8px var(--neon-cyan);
+    }
+
+    .form-check-input {
+        background-color: transparent;
+        border-color: #555;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+    .form-check-input:checked {
+        background-color: var(--neon-cyan);
+        border-color: var(--neon-cyan);
     }
 </style>
 
-<div class="container-fluid p-0 login-container">
-    <div class="row g-0">
+<video class="video-bg" autoplay muted loop playsinline>
+    <source src="{% static 'core/video/intro.mp4' %}" type="video/mp4">
+</video>
+<div class="neon-overlay"></div>
 
-        <div class="col-lg-7 d-none d-lg-block bg-image">
-            <div class="bg-overlay"></div>
-            <div class="d-flex h-100 flex-column justify-content-end p-5 text-white"
-                style="position: relative; z-index: 2;">
-                <h2 class="fw-bold display-6">Join the Community</h2>
-                <p class="lead">Empowering farmers with real-time security.</p>
+<a href="{% url 'home' %}" class="hud-back-btn">
+    <div class="icon-box">
+        <i class="bi bi-chevron-left"></i>
+    </div>
+    <span class="text-label">RETURN TO BASE</span>
+</a>
+
+<div class="container d-flex justify-content-center">
+    <div class="auth-card">
+        
+        <h1 class="auth-title">Register</h1>
+        <p class="auth-subtitle">New Operator Enrollment_</p>
+
+        <form method="post" enctype="multipart/form-data" id="registerForm">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger bg-transparent text-danger border-danger mb-3" style="font-family: monospace;">
+                {% for error in form.non_field_errors %}
+                   ⚠ {{ error }}
+                {% endfor %}
             </div>
-        </div>
+            {% endif %}
 
-        <div class="col-lg-5 login-section">
-            <div class="w-100 mx-auto animate-entry" style="max-width: 450px;">
-
-                <div class="mb-5">
-                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 mb-3">
-                        <i class="bi bi-person-plus-fill me-2"></i>New Account
-                    </span>
-                    <h1 class="fw-bold text-dark">Create Account</h1>
-                    <p class="text-muted mt-2">Start protecting your farmland today.</p>
+            {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                    {{ field.label }} {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                
+                {{ field }}
+                
+                {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                
+                {% for error in field.errors %}
+                <div class="text-danger small mt-1" style="font-family: monospace;">
+                    [ERROR]: {{ error }}
                 </div>
-
-                <form method="post" enctype="multipart/form-data" novalidate>
-                    {% csrf_token %}
-
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4">
-                        {% for error in form.non_field_errors %}
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-exclamation-octagon-fill me-2"></i> {{ error }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    {% for field in form %}
-                    
-                        {% if field.name == 'profile_picture' %}
-                        <div class="mb-4">
-                            <label class="form-label text-muted small fw-bold ms-1">{{ field.label }}</label>
-                            {{ field }} {% for error in field.errors %}
-                            <div class="text-danger small mt-2 ps-1">
-                                <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
-                            </div>
-                            {% endfor %}
-                        </div>
-
-                        {% else %}
-                        <div class="form-floating mb-4">
-                            {{ field }}
-                            <label for="{{ field.id_for_label }}" class="text-muted">{{ field.label }}</label>
-
-                            {% for error in field.errors %}
-                            <div class="text-danger small mt-2 ps-1">
-                                <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-
-                    {% endfor %}
-
-                    <div class="mb-4 d-flex align-items-center">
-                        <div class="form-check custom-checkbox">
-                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
-                            <label class="form-check-label text-muted small ms-2" for="termsCheck">
-                                I agree to the <a href="#" class="text-success text-decoration-none">Terms & Conditions</a>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-login text-white fw-bold shadow-sm">
-                            Create Account
-                        </button>
-                    </div>
-                </form>
-
-                <div class="text-center mt-5 text-muted">
-                    <p>Already a member? <a href="{% url 'login' %}"
-                            class="text-success fw-bold text-decoration-none">Login Here</a></p>
-                </div>
+                {% endfor %}
             </div>
+            {% endfor %}
+
+            <div class="form-check mb-4 mt-4">
+                <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                <label class="form-check-label text-muted small" for="terms" style="cursor: pointer;">
+                    I accept the <a href="#" class="text-decoration-none" style="color: var(--neon-cyan);">System Protocols</a>
+                </label>
+            </div>
+
+            <button type="submit" class="btn-cyber">
+                AUTHORIZE ACCOUNT
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-muted small mb-0">ALREADY AUTHORIZED?</p>
+            <a href="{% url 'login' %}" class="auth-link fw-bold" style="color: var(--neon-cyan);">RETURN TO LOGIN</a>
         </div>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Select inputs excluding checkboxes/radios
-        var inputs = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), select, textarea');
+        // Styling Form Fields
+        var inputs = document.querySelectorAll('input, select, textarea');
         inputs.forEach(function (input) {
             input.classList.add('form-control');
-            // Only add placeholder for floating labels (skip file inputs)
-            if (input.type !== 'file') {
+            if (input.type !== 'file' && input.type !== 'checkbox') {
                 input.placeholder = ' '; 
+            }
+        });
+
+        // Custom Check for Protocols (Optional visual enhancement)
+        const form = document.getElementById('registerForm');
+        const terms = document.getElementById('terms');
+
+        form.addEventListener('submit', function(event) {
+            if (!terms.checked) {
+                event.preventDefault(); // Stop submission
+                // Flash the checkbox red to show user what they missed
+                terms.style.boxShadow = "0 0 10px red";
+                terms.style.borderColor = "red";
+                // Reset style after 2 seconds
+                setTimeout(() => {
+                    terms.style.boxShadow = "";
+                    terms.style.borderColor = "#555";
+                }, 2000);
             }
         });
     });
