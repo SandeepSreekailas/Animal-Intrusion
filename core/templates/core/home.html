@@ -4,44 +4,70 @@
 
 {% block layout %}
 <style>
-    /* Custom Landing Page Styles */
-    body {
-        background-color: #fff !important;
-        /* Override base background */
+    /* VARIABLES */
+    :root {
+        --primary: #0d6efd;
+        --secondary: #6c757d;
+        --dark: #012970;
+        --light: #f6f9ff;
     }
 
-    /* Navbar */
+    /* GLOBAL OVERRIDES */
+    body {
+        background-color: #fff !important;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Nunito', sans-serif;
+        color: var(--dark);
+    }
+
+    /* NAVBAR */
     .landing-nav {
         background: #fff;
         padding: 1rem 0;
-        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s;
     }
 
     .nav-logo {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #012970;
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--dark);
         text-decoration: none;
-        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .nav-logo i {
+        color: var(--primary);
     }
 
     .landing-nav .nav-link {
         color: #013289;
-        font-weight: 600;
+        font-weight: 700;
         margin-left: 1.5rem;
         transition: 0.3s;
+        font-size: 1rem;
     }
 
     .landing-nav .nav-link:hover {
-        color: #4154f1;
+        color: var(--primary);
     }
 
     .btn-get-started {
-        background: #4154f1;
-        border: 2px solid #4154f1;
+        background: var(--primary);
+        border: 2px solid var(--primary);
         color: #fff;
-        border-radius: 50px;
-        padding: 8px 25px;
+        border-radius: 5px;
+        padding: 10px 25px;
         margin-left: 30px;
         transition: 0.3s;
         text-decoration: none;
@@ -49,136 +75,331 @@
     }
 
     .btn-get-started:hover {
-        background: #2741d4;
+        background: #0b5ed7;
         color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
     }
 
-    /* Hero Section */
+    /* HERO SECTION */
     .hero {
         width: 100%;
-        height: 85vh;
-        background: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop') top center;
+        min-height: 90vh;
+        background: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop') center center;
         background-size: cover;
         position: relative;
-        padding: 120px 0 60px 0;
         display: flex;
         align-items: center;
+        padding-top: 80px;
     }
 
     .hero::before {
         content: "";
-        background: rgba(1, 4, 136, 0.7);
-        /* Overlay darker than before for text pop */
+        background: linear-gradient(to right, rgba(1, 4, 136, 0.9), rgba(1, 4, 136, 0.6));
         position: absolute;
-        bottom: 0;
-        top: 0;
-        left: 0;
-        right: 0;
+        inset: 0;
     }
 
     .hero-content {
         position: relative;
         z-index: 2;
+        color: #fff;
     }
 
     .hero h1 {
-        margin: 0;
-        font-size: 48px;
-        font-weight: 700;
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
         color: #fff;
+        line-height: 1.2;
     }
 
     .hero h2 {
-        color: rgba(255, 255, 255, 0.9);
-        margin: 15px 0 0 0;
-        font-size: 24px;
+        font-size: 1.5rem;
         font-weight: 400;
+        margin-bottom: 40px;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 600px;
     }
 
     .hero-btn {
-        margin-top: 30px;
-        display: inline-block;
-        padding: 12px 40px;
-        border-radius: 50px;
-        color: #fff;
-        background: #4154f1;
-        border: 2px solid #4154f1;
-        font-size: 16px;
-        font-weight: 600;
+        padding: 15px 40px;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        font-weight: 700;
         text-decoration: none;
         transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    .hero-btn:hover {
-        background: #2e41d8;
-        border-color: #2e41d8;
+    .btn-primary-hero {
+        background: var(--primary);
+        color: #fff;
+        border: 2px solid var(--primary);
+        margin-right: 15px;
+    }
+
+    .btn-primary-hero:hover {
+        background: #0b5ed7;
+        color: #fff;
+        transform: translateY(-3px);
+    }
+
+    .btn-outline-hero {
+        border: 2px solid rgba(255, 255, 255, 0.8);
         color: #fff;
     }
 
-    /* Features Section */
-    .features {
-        padding: 80px 0;
+    .btn-outline-hero:hover {
         background: #fff;
+        color: var(--primary);
     }
 
-    .feature-box {
-        text-align: center;
-        padding: 40px 30px;
+    /* STATS SECTION */
+    .stats-section {
+        padding: 40px 0;
+        background: #f6f9ff;
+        margin-top: -60px;
+        position: relative;
+        z-index: 3;
         border-radius: 10px;
-        background: #fff;
-        box-shadow: 0px 5px 30px rgba(0, 10, 50, 0.08);
-        transition: all 0.3s ease-in-out;
-        height: 100%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 
-    .feature-box:hover {
-        transform: translateY(-5px);
-        box-shadow: 0px 5px 40px rgba(0, 10, 50, 0.15);
+    .stat-item {
+        text-align: center;
+        padding: 20px;
+        border-right: 1px solid #e0e0e0;
     }
 
-    .feature-icon {
-        font-size: 48px;
-        color: #4154f1;
+    .stat-item:last-child {
+        border-right: none;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* SECTIONS COMMON */
+    section {
+        padding: 80px 0;
+        overflow: hidden;
+    }
+
+    .section-header {
+        text-align: center;
+        padding-bottom: 60px;
+    }
+
+    .section-header h2 {
+        font-size: 14px;
+        letter-spacing: 2px;
+        font-weight: 700;
+        margin: 0;
+        color: var(--primary);
+        text-transform: uppercase;
+    }
+
+    .section-header p {
+        margin: 10px 0 0 0;
+        padding: 0;
+        font-size: 38px;
+        line-height: 42px;
+        font-weight: 800;
+        color: var(--dark);
+    }
+
+    /* ABOUT SECTION */
+    .about .content h3 {
+        font-weight: 700;
+        font-size: 2rem;
+        color: var(--dark);
         margin-bottom: 20px;
     }
 
-    .feature-title {
+    .about .content p {
+        font-size: 1.1rem;
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+
+    .about-img {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .about-img img {
+        width: 100%;
+        transition: transform 0.5s;
+    }
+
+    .about-img:hover img {
+        transform: scale(1.05);
+    }
+
+    /* HOW IT WORKS */
+    .steps-box {
+        text-align: center;
+        padding: 30px;
+        position: relative;
+    }
+
+    .step-number {
+        width: 60px;
+        height: 60px;
+        background: var(--primary);
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 800;
+        margin: 0 auto 20px;
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+    }
+
+    .steps-box h3 {
         font-weight: 700;
         margin-bottom: 15px;
-        font-size: 20px;
-        color: #012970;
     }
 
-    .feature-text {
-        color: #666666;
-        line-height: 26px;
+    .steps-box i {
+        font-size: 40px;
+        color: var(--primary);
+        margin-bottom: 20px;
+        display: inline-block;
     }
 
-    /* Footer */
+    /* FEATURES */
+    .feature-card {
+        background: #fff;
+        padding: 40px 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: 0.3s;
+        height: 100%;
+        border-bottom: 4px solid transparent;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        border-bottom-color: var(--primary);
+    }
+
+    .feature-icon-box {
+        width: 60px;
+        height: 60px;
+        background: #f6f9ff;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+        color: var(--primary);
+        font-size: 28px;
+    }
+
+    .feature-card h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    /* FOOTER */
     .footer {
         background: #012970;
-        /* Dark premium blue */
-        padding: 30px 0;
+        padding: 50px 0 20px;
         color: #fff;
         font-size: 14px;
-        text-align: center;
+    }
+
+    .footer h4 {
+        color: #fff;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        position: relative;
+        padding-bottom: 10px;
+    }
+
+    .footer h4::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 2px;
+        width: 40px;
+        background: var(--primary);
+    }
+
+    .footer-links a {
+        color: #fff;
+        text-decoration: none;
+        display: block;
+        padding-bottom: 10px;
+        transition: 0.3s;
+    }
+
+    .footer-links a:hover {
+        color: var(--primary);
+        padding-left: 5px;
+    }
+
+    .social-links a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-radius: 50%;
+        margin-right: 10px;
+        transition: 0.3s;
+        text-decoration: none;
+    }
+
+    .social-links a:hover {
+        background: var(--primary);
     }
 </style>
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg fixed-top landing-nav">
     <div class="container">
-        <a class="nav-logo" href="{% url 'home' %}">AnimalGuard</a>
+        <a class="nav-logo" href="{% url 'home' %}">
+            <i class="bi bi-shield-check"></i>
+            AnimalGuard
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav align-items-center">
-                <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#hero">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="#how-it-works">How It Works</a></li>
                 <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
                 {% if user.is_authenticated %}
-                <li class="nav-item"><a href="{% url 'analytics-dashboard' %}" class="btn-get-started">Go to
-                        Dashboard</a></li>
+                <li class="nav-item"><a href="{% url 'analytics-dashboard' %}" class="btn-get-started">Dashboard</a>
+                </li>
                 {% else %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
                 <li class="nav-item"><a href="{% url 'register' %}" class="btn-get-started">Get Started</a></li>
@@ -189,19 +410,124 @@
 </nav>
 
 <!-- Hero Section -->
-<section class="hero d-flex align-items-center">
-    <div class="container hero-content text-center">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <h1 data-aos="fade-up">Protect Your Crops with AI Intelligence</h1>
-                <h2 data-aos="fade-up" data-aos-delay="100">Real-time animal intrusion detection to secure your farmland
-                    day and night.</h2>
+<section id="hero" class="hero">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 data-aos="fade-up">Smart Farming Meets <br> Next-Gen Security</h1>
+                <h2 data-aos="fade-up" data-aos-delay="100">
+                    Proactive wild animal intrusion detection system powered by Artificial Intelligence.
+                    Protect your crops 24/7 without manual guarding.
+                </h2>
                 <div data-aos="fade-up" data-aos-delay="200">
                     {% if user.is_authenticated %}
-                    <a href="{% url 'analytics-dashboard' %}" class="hero-btn">Go to Dashboard</a>
+                    <a href="{% url 'analytics-dashboard' %}" class="hero-btn btn-primary-hero">
+                        <i class="bi bi-speedometer2"></i> Go to Dashboard
+                    </a>
                     {% else %}
-                    <a href="{% url 'register' %}" class="hero-btn">Get Started</a>
+                    <a href="{% url 'register' %}" class="hero-btn btn-primary-hero">
+                        <i class="bi bi-rocket-takeoff"></i> Get Started Free
+                    </a>
+                    <a href="#about" class="hero-btn btn-outline-hero">
+                        <i class="bi bi-play-circle"></i> Learn More
+                    </a>
                     {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="stats-section bg-white d-flex flex-wrap justify-content-around">
+                <div class="stat-item col-md-3">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Monitoring</div>
+                </div>
+                <div class="stat-item col-md-3">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat-item col-md-3">
+                    <div class="stat-number">0.5s</div>
+                    <div class="stat-label">Response Time</div>
+                </div>
+                <div class="stat-item col-md-3">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">Farms Secure</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- About Section -->
+<section id="about" class="about">
+    <div class="container" data-aos="fade-up">
+        <div class="row gx-5 align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <div class="about-img">
+                    <!-- Using the local static image -->
+                    {% load static %}
+                    <img src="{% static 'core/img/ai_farmer_monitoring_v2_1770695570732.png' %}" class="img-fluid" alt="Modern Farmer with Tech">
+                </div>
+            </div>
+            <div class="col-lg-6 content">
+                <h3>Empowering Farmers with Technology</h3>
+                <p>
+                    Traditional farming faces distinct challenges from wildlife intrusion, leading to significant crop
+                    loss and financial strain. AnimalGuard bridges the gap between traditional agriculture and modern
+                    security.
+                </p>
+                <p>
+                    Our system uses <strong>Computer Vision</strong> and <strong>Deep Learning</strong> to create a
+                    virtual fence around your property. It distinguishes between harmless movement and actual threats,
+                    sending real-time alerts so you can take action immediately.
+                </p>
+                <a href="#" class="btn btn-outline-primary rounded-pill px-4 mt-3">Read Our Story <i
+                        class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="bg-light">
+    <div class="container" data-aos="fade-up">
+        <div class="section-header">
+            <h2>Process</h2>
+            <p>How AnimalGuard Works</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="steps-box">
+                    <div class="step-number">1</div>
+                    <i class="bi bi-camera-video"></i>
+                    <h3>Smart Detection</h3>
+                    <p>Cameras installed around your farm continuously scan for movement using our AI models, filtering
+                        out wind and shadows.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="steps-box">
+                    <div class="step-number">2</div>
+                    <i class="bi bi-cpu"></i>
+                    <h3>Instant Analysis</h3>
+                    <p>When an animal is spotted, the system identifies the species (Elephant, Boar, etc.) in
+                        milliseconds.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="steps-box">
+                    <div class="step-number">3</div>
+                    <i class="bi bi-bell-fill"></i>
+                    <h3>Real-Time Alerts</h3>
+                    <p>You receive an instant notification on your dashboard and via email with a snapshot of the
+                        intrusion.</p>
                 </div>
             </div>
         </div>
@@ -210,44 +536,128 @@
 
 <!-- Features Section -->
 <section id="features" class="features">
-    <div class="container">
+    <div class="container" data-aos="fade-up">
+        <div class="section-header">
+            <h2>Capabilities</h2>
+            <p>Why Choose AnimalGuard?</p>
+        </div>
         <div class="row gy-4">
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-                <div class="feature-box">
-                    <i class="bi bi-camera-video feature-icon"></i>
-                    <h3 class="feature-title">Real-Time Detection</h3>
-                    <p class="feature-text">Our advanced AI models analyze video feeds instantly to identify potential
-                        threats from wild animals before damage occurs.</p>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-eye"></i>
+                    </div>
+                    <h3>Computer Vision</h3>
+                    <p>State-of-the-art YOLO models trained specifically on Indian wildlife for maximum accuracy.</p>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-                <div class="feature-box">
-                    <i class="bi bi-bell feature-icon"></i>
-                    <h3 class="feature-title">Instant Alerts</h3>
-                    <p class="feature-text">Receive immediate notifications via email or dashboard alerts whenever an
-                        intrusion is detected on your property.</p>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h3>Data Analytics</h3>
+                    <p>Comprehensive dashboards to track intrusion patterns, peak times, and high-risk zones.</p>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
-                <div class="feature-box">
-                    <i class="bi bi-graph-up-arrow feature-icon"></i>
-                    <h3 class="feature-title">Smart Analytics</h3>
-                    <p class="feature-text">Visualize intrusion patterns over time with detailed charts to understand
-                        risks and improve your farm's defenses.</p>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h3>Multi-Farm Support</h3>
+                    <p>Manage multiple farmland locations from a single account with isolated data for each.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                    </div>
+                    <h3>Cloud Storage</h3>
+                    <p>Securely store evidence of intrusions for insurance claims and forest department reporting.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <h3>Mobile Ready</h3>
+                    <p>Responsive design that works perfectly on your smartphone, tablet, or desktop computer.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <h3>Geo-Tagging</h3>
+                    <p>Pinpoint exact intrusion locations on an interactive map to plan your physical defenses.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Simple Footer -->
+<!-- Footer -->
 <footer class="footer">
     <div class="container">
-        <div class="copyright">
-            &copy; Copyright <strong><span>AnimalGuard</span></strong>. All Rights Reserved
+        <div class="row gy-4">
+            <div class="col-lg-5 col-md-12 footer-info">
+                <a href="{% url 'home' %}"
+                    class="logo d-flex align-items-center mb-3 text-white text-decoration-none h4 fw-bold">
+                    <span>AnimalGuard</span>
+                </a>
+                <p>Protecting agriculture through innovation. Our mission is to reduce human-wildlife conflict and
+                    ensure food security for the nation.</p>
+                <div class="social-links mt-3">
+                    <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-6 footer-links">
+                <h4>Useful Links</h4>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#about">About us</a></li>
+                    <li><a href="#">Simluation</a></li>
+                    <li><a href="#">Terms of service</a></li>
+                    <li><a href="#">Privacy policy</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-2 col-6 footer-links">
+                <h4>Our Services</h4>
+                <ul>
+                    <li><a href="#">Intrusion Detection</a></li>
+                    <li><a href="#">Farm Analytics</a></li>
+                    <li><a href="#">Security Consulting</a></li>
+                    <li><a href="#">Hardware Setup</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-3 col-md-12 footer-contact text-center text-md-start">
+                <h4>Contact Us</h4>
+                <p class="text-white-50">
+                    A108 Tech Park <br>
+                    Trivandrum, Kerala 695001<br>
+                    India <br><br>
+                    <strong>Phone:</strong> +91 9876 543 210<br>
+                    <strong>Email:</strong> info@animalguard.in<br>
+                </p>
+            </div>
         </div>
-        <div class="credits text-white-50 mt-2 small">
-            AI-Powered Farmland Protection
+
+        <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+
+        <div class="text-center">
+            <div class="copyright">
+                &copy; Copyright <strong><span>AnimalGuard</span></strong>. All Rights Reserved
+            </div>
         </div>
     </div>
 </footer>

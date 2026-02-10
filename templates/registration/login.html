@@ -1,75 +1,251 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Login - FarmGuard{% endblock %}
 
 {% block content %}
 <style>
-    /* Gradient Background for Auth Page */
+    /* Custom Animations & Layout */
     body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        height: 100vh;
-        overflow: hidden;
+        overflow-x: hidden;
+        background-color: #fff;
     }
 
-    .card-auth {
+    .login-container {
+        min-height: 100vh;
+    }
+
+    /* Left Side: The Image */
+    .bg-image {
+        /* Placeholder image - Replace with your farm image URL or static file */
+        background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        min-height: 100vh;
+        position: relative;
+    }
+
+    /* Optional overlay to make text pop if you add text over the image */
+    .bg-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+    }
+
+    /* Right Side: The Form */
+    .login-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 4rem;
+        background: #ffffff;
+    }
+
+    /* Animation Keyframes */
+    @keyframes slideInUp {
+        from {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .animate-entry {
+        animation: slideInUp 0.8s ease-out forwards;
+    }
+
+    /* Form Styling */
+    .form-control {
+        border: 2px solid #eef2f6;
+        border-radius: 12px;
+        padding: 1rem 1rem;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #2e7d32;
+        /* Farm green theme */
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
+    }
+
+    .form-floating>label {
+        padding-left: 1rem;
+        padding-top: 0.6rem;
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
         border: none;
-        border-radius: 1rem;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 1.1rem;
+        transition: transform 0.2s;
     }
 
-    .form-floating>.form-control:focus~label,
-    .form-floating>.form-control:not(:placeholder-shown)~label {
-        color: #0d6efd;
-        transform: scale(.85) translateY(-0.5rem) translateX(0.15rem);
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(46, 125, 50, 0.2);
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 991.98px) {
+        .bg-image {
+            display: none;
+            /* Hide image on small screens or make it a top banner */
+        }
+
+        .login-section {
+            padding: 2rem;
+        }
+    }
+
+   .custom-checkbox .form-check-input {
+    /* "em" makes it relative to the font size */
+    width: 1.4em !important;   
+    height: 1.4em !important;  
+    
+    /* This centers it nicely with the text */
+    margin-top: 0.2em !important; 
+    
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+    .custom-checkbox .form-check-input:checked {
+        background-color: #2e7d32;
+        /* Farm Green */
+        border-color: #2e7d32;
+    }
+
+    .custom-checkbox .form-check-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+        /* Green Glow */
+        border-color: #2e7d32;
+    }
+
+    .custom-checkbox .form-check-label {
+        margin-left: 0.5rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: #6c757d;
+        user-select: none;
+        /* Prevents text highlighting when clicking fast */
+    }
+
+    /* Custom Checkbox: Green Tick on White Box */
+    .form-check-input:checked {
+        background-color: #fff;
+        /* Box stays white */
+        border-color: #2e7d32;
+        /* Border turns green */
+
+        /* This SVG code draws the specific Green Tick */
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%232e7d32' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+    }
+
+    /* Green glow focus ring */
+    .form-check-input:focus {
+        border-color: #2e7d32;
+        box-shadow: 0 0 0 0.25rem rgba(125, 124, 46, 0.15);
     }
 </style>
 
-<div class="row align-items-center min-vh-100 justify-content-center">
-    <div class="col-md-5 col-lg-4">
-        <div class="card card-auth">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <h3 class="fw-bold">Welcome Back</h3>
-                    <p class="text-muted">Please sign in to continue</p>
+<div class="container-fluid p-0 login-container">
+    <div class="row g-0">
+
+        <div class="col-lg-7 d-none d-lg-block bg-image">
+            <div class="bg-overlay"></div>
+            <div class="d-flex h-100 flex-column justify-content-end p-5 text-white"
+                style="position: relative; z-index: 2;">
+                <h2 class="fw-bold display-6">Protecting Your Harvest</h2>
+                <p class="lead">Smart detection systems for modern farming.</p>
+            </div>
+        </div>
+
+        <div class="col-lg-5 login-section">
+            <div class="w-100 mx-auto animate-entry" style="max-width: 450px;">
+
+                <div class="mb-5">
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 mb-3">
+                        <i class="bi bi-shield-lock me-2"></i>Secure Access
+                    </span>
+                    <h1 class="fw-bold text-dark">Welcome Back! 👋</h1>
+                    <p class="text-muted mt-2">Enter your credentials to access the dashboard.</p>
                 </div>
 
                 <form method="post" novalidate>
                     {% csrf_token %}
 
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4">
+                        {% for error in form.non_field_errors %}
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-octagon-fill me-2"></i> {{ error }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     {% for field in form %}
-                    <div class="form-floating mb-3">
+                    <div class="form-floating mb-4">
                         {{ field }}
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <label for="{{ field.id_for_label }}" class="text-muted">{{ field.label }}</label>
+
                         {% for error in field.errors %}
-                        <div class="text-danger small mt-1">
+                        <div class="text-danger small mt-2 ps-1">
                             <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
                         </div>
                         {% endfor %}
                     </div>
                     {% endfor %}
 
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check custom-checkbox d-flex align-items-center">
+                            <input class="form-check-input" type="checkbox" value="" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">
+                                Remember me
+                            </label>
+                        </div>
+
+                        <a href="#" class="text-decoration-none small text-success fw-bold hover-link">
+                            Forgot password?
+                        </a>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-login text-white fw-bold shadow-sm">
                             Sign In
                         </button>
                     </div>
                 </form>
-            </div>
-            <div class="card-footer bg-transparent border-0 text-center py-3">
-                <p class="mb-0 text-muted">Don't have an account? <a href="{% url 'register' %}"
-                        class="fw-bold text-decoration-none">Create Account</a></p>
+
+                <div class="text-center mt-5 text-muted">
+                    <p>Don't have an account yet? <a href="{% url 'register' %}"
+                            class="text-success fw-bold text-decoration-none">Create Account</a></p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Ensure form controls have the right class for floating labels -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        var inputs = document.querySelectorAll('input, select, textarea');
+        // Select only inputs that are NOT checkboxes or radios
+        var inputs = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), select, textarea');
+        
         inputs.forEach(function (input) {
             input.classList.add('form-control');
-            input.placeholder = ' '; // Required for floating labels
+            input.placeholder = ' '; // Keeps floating labels working
         });
     });
 </script>
