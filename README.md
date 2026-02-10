@@ -1,4 +1,4 @@
-# 🌾 AI-Based Animal Intrusion Detection System
+#  AI-Based Animal Intrusion Detection System
 
 A web-based AI system that detects animal intrusions in farmland using computer vision and object detection models.
 
@@ -6,28 +6,28 @@ Built with **Django + OpenCV + YOLO**, this system allows farmers to upload vide
 
 ---
 
-## 🚀 Features
+##  Features
 
-### 🔐 User Management
+###  User Management
 
 * Secure user registration & login
 * Role-based access
 * User-specific dashboards
 * Isolated data per user
 
-### 🌍 Farmland Management
+###  Farmland Management
 
 * Add and manage farmlands
 * Interactive map integration (Leaflet + OpenStreetMap)
 * Store latitude & longitude
 
-### 🎥 Video Management
+###  Video Management
 
 * Upload video files (MP4, AVI, MOV, MKV)
 * Metadata extraction (duration, FPS, resolution)
 * Processing status tracking
 
-### 🧠 AI Processing Engine
+###  AI Processing Engine
 
 * Motion detection (OpenCV)
 * Vegetation filtering
@@ -36,7 +36,7 @@ Built with **Django + OpenCV + YOLO**, this system allows farmers to upload vide
 * YOLO-based animal verification
 * Severity classification (Low / Medium / Critical)
 
-### 📊 Dashboard & Analytics
+###  Dashboard & Analytics
 
 * Total videos processed
 * Detection statistics
@@ -44,7 +44,7 @@ Built with **Django + OpenCV + YOLO**, this system allows farmers to upload vide
 * Farmland-wise intrusion comparison
 * Time-based detection graphs
 
-### 📄 Reports
+###  Reports
 
 * CSV export
 * PDF summary report
@@ -52,7 +52,7 @@ Built with **Django + OpenCV + YOLO**, this system allows farmers to upload vide
 
 ---
 
-## 🏗️ Tech Stack
+##  Tech Stack
 
 * **Backend:** Django 4.x
 * **Computer Vision:** OpenCV
@@ -63,7 +63,7 @@ Built with **Django + OpenCV + YOLO**, this system allows farmers to upload vide
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 animal_intrusion/
@@ -88,7 +88,7 @@ animal_intrusion/
 
 ---
 
-## ⚙️ Installation
+##  Installation
 
 ### 1️⃣ Clone the repository
 
@@ -130,7 +130,7 @@ http://127.0.0.1:8000/
 
 ---
 
-## 🧠 How It Works
+##  How It Works
 
 1. User uploads video
 2. OpenCV processes frames
@@ -147,7 +147,7 @@ http://127.0.0.1:8000/
 
 ---
 
-## 🔐 Data Isolation
+##  Data Isolation
 
 Each user can only access:
 
@@ -160,7 +160,7 @@ All queries are filtered by `request.user`.
 
 ---
 
-## 📊 Severity Logic
+##  Severity Logic
 
 * **Critical** → Large predator detected
 * **High** → Large animal intrusion
@@ -170,7 +170,7 @@ Severity is determined by system logic, not the detection model.
 
 ---
 
-## 🌍 Map Integration
+##  Map Integration
 
 Farmland locations are selected using:
 
@@ -180,7 +180,7 @@ Farmland locations are selected using:
 
 ---
 
-## 🛠️ Future Improvements
+##  Future Improvements
 
 * Custom wildlife-trained YOLO model
 * Real-time camera integration
@@ -190,7 +190,7 @@ Farmland locations are selected using:
 
 ---
 
-## 📜 License
+##  License
 
 This project is for educational and research purposes.
 
