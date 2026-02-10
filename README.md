@@ -1,4 +1,4 @@
-AI-Based Animal Intrusion Detection System
+# 🌾 AI-Based Animal Intrusion Detection System
 
 A web-based AI system that detects animal intrusions in farmland using computer vision and object detection models.
 
@@ -92,32 +92,43 @@ animal_intrusion/
 
 ### 1️⃣ Clone the repository
 
+```bash
 git clone https://github.com/yourusername/animal-intrusion-detection.git
 cd animal-intrusion-detection
+```
 
 ### 2️⃣ Create virtual environment
 
+```bash
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
-
+```
 
 ### 3️⃣ Install dependencies
 
+```bash
 pip install -r requirements.txt
-
+```
 
 ### 4️⃣ Apply migrations
 
+```bash
 python manage.py migrate
+```
 
 ### 5️⃣ Run server
 
+```bash
 python manage.py runserver
+```
 
 Visit:
 
+```
 http://127.0.0.1:8000/
+```
 
+---
 
 ## 🧠 How It Works
 
