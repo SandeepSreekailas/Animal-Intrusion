@@ -82,79 +82,140 @@
     }
 
     /* HERO SECTION */
+/* GAME INTRO STYLE HERO */
     .hero {
-        width: 100%;
-        min-height: 90vh;
-        background: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop') center center;
-        background-size: cover;
         position: relative;
+        width: 100%;
+        height: 100vh;
+        background: #000;
+        overflow: hidden;
         display: flex;
         align-items: center;
-        padding-top: 80px;
+        justify-content: center;
+        color: #fff;
     }
 
-    .hero::before {
-        content: "";
-        background: linear-gradient(to right, rgba(1, 4, 136, 0.9), rgba(1, 4, 136, 0.6));
+    /* 1. The Cinematic Video Background */
+    .hero-video {
         position: absolute;
-        inset: 0;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.6;
+        /* Zoom animation for that "Cinematic Opening" feel */
+        animation: slowZoom 20s infinite alternate; 
     }
 
+    @keyframes slowZoom {
+        from { transform: scale(1); }
+        to { transform: scale(1.2); }
+    }
+
+    /* 2. The "Vignette" (Dark edges like a game screen) */
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, transparent 40%, #000 100%);
+        z-index: 1;
+    }
+
+    /* 3. Scanlines (TV / Monitor Effect) */
+    .scanlines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 2px, 3px 100%;
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    /* 4. The "Game Title" Typography */
     .hero-content {
         position: relative;
-        z-index: 2;
-        color: #fff;
+        z-index: 10;
+        text-align: center;
+        max-width: 900px;
     }
 
-    .hero h1 {
-        font-size: 3.5rem;
-        font-weight: 800;
-        margin-bottom: 20px;
-        color: #fff;
-        line-height: 1.2;
+    .hero-title {
+        font-size: 5rem; /* HUGE TEXT */
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 10px;
+        margin-bottom: 0;
+        position: relative;
+        /* The Glitch Effect Color Split */
+        text-shadow: 2px 0 red, -2px 0 blue;
+        animation: glitch 3s infinite;
     }
 
-    .hero h2 {
+    /* The Subtitle (Mission Briefing style) */
+    .hero-subtitle {
+        font-family: 'Courier New', monospace; /* Monospace looks like code/data */
+        font-size: 1.2rem;
+        color: #0d6efd; /* Electric Blue */
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        border-right: 2px solid #0d6efd;
+        display: inline-block;
+        animation: blinkCursor 0.75s step-end infinite;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 5px 15px;
+    }
+
+    /* 5. The "Start Game" Button */
+    .btn-game-start {
+        background: transparent;
+        color: #fff;
         font-size: 1.5rem;
-        font-weight: 400;
-        margin-bottom: 40px;
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 600px;
-    }
-
-    .hero-btn {
-        padding: 15px 40px;
-        border-radius: 5px;
-        font-size: 1.1rem;
-        font-weight: 700;
-        text-decoration: none;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 15px 50px;
+        border: 2px solid #fff;
+        letter-spacing: 2px;
+        position: relative;
+        overflow: hidden;
         transition: 0.3s;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
+        text-decoration: none;
+        clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); /* Sci-Fi Shape */
     }
 
-    .btn-primary-hero {
-        background: var(--primary);
-        color: #fff;
-        border: 2px solid var(--primary);
-        margin-right: 15px;
-    }
-
-    .btn-primary-hero:hover {
-        background: #0b5ed7;
-        color: #fff;
-        transform: translateY(-3px);
-    }
-
-    .btn-outline-hero {
-        border: 2px solid rgba(255, 255, 255, 0.8);
-        color: #fff;
-    }
-
-    .btn-outline-hero:hover {
+    .btn-game-start:hover {
         background: #fff;
-        color: var(--primary);
+        color: #000;
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+
+    /* ANIMATIONS */
+    @keyframes glitch {
+        0% { text-shadow: 2px 0 red, -2px 0 blue; transform: skew(0deg); }
+        5% { text-shadow: 2px 0 red, -2px 0 blue; transform: skew(0deg); }
+        6% { text-shadow: -2px 0 red, 2px 0 blue; transform: skew(-10deg); } /* GLITCH! */
+        7% { text-shadow: 2px 0 red, -2px 0 blue; transform: skew(0deg); }
+        60% { text-shadow: 2px 0 red, -2px 0 blue; transform: skew(0deg); }
+        61% { text-shadow: -2px 0 red, 2px 0 blue; transform: skew(5deg); } /* GLITCH! */
+        62% { text-shadow: 2px 0 red, -2px 0 blue; transform: skew(0deg); }
+        100% { text-shadow: 2px 0 red, -2px 0 blue; transform: skew(0deg); }
+    }
+
+    @keyframes blinkCursor {
+        from, to { border-color: transparent; }
+        50% { border-color: #0d6efd; }
+    }
+
+    /* Responsive Font Sizing */
+    @media (max-width: 768px) {
+        .hero-title { font-size: 3rem; letter-spacing: 5px; }
+        .btn-game-start { padding: 10px 30px; font-size: 1.2rem; }
     }
 
     /* STATS SECTION */
@@ -411,30 +472,36 @@
 
 <!-- Hero Section -->
 <section id="hero" class="hero">
-    <div class="container hero-content">
-        <div class="row align-items-center">
-            <div class="col-lg-7">
-                <h1 data-aos="fade-up">Smart Farming Meets <br> Next-Gen Security</h1>
-                <h2 data-aos="fade-up" data-aos-delay="100">
-                    Proactive wild animal intrusion detection system powered by Artificial Intelligence.
-                    Protect your crops 24/7 without manual guarding.
-                </h2>
-                <div data-aos="fade-up" data-aos-delay="200">
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'analytics-dashboard' %}" class="hero-btn btn-primary-hero">
-                        <i class="bi bi-speedometer2"></i> Go to Dashboard
-                    </a>
-                    {% else %}
-                    <a href="{% url 'register' %}" class="hero-btn btn-primary-hero">
-                        <i class="bi bi-rocket-takeoff"></i> Get Started Free
-                    </a>
-                    <a href="#about" class="hero-btn btn-outline-hero">
-                        <i class="bi bi-play-circle"></i> Learn More
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
+    
+    <video class="hero-video" autoplay muted loop playsinline>
+        <source src="https://videos.pexels.com/video-files/5405427/5405427-hd_1920_1080_25fps.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="hero-overlay"></div> <div class="scanlines"></div>    <div class="container hero-content">
+        
+        <div class="mb-2">
+            <span class="hero-subtitle">SYSTEM STATUS: ARMED // MONITORING SECTOR 7</span>
         </div>
+
+        <h1 class="hero-title">ANIMAL<br>GUARD</h1>
+        
+        <p class="lead text-white-50 mt-3 mb-5 fw-bold" style="letter-spacing: 1px;">
+            AI-POWERED INTRUSION DEFENSE SYSTEM
+        </p>
+
+        <div class="d-flex justify-content-center gap-3">
+            {% if user.is_authenticated %}
+            <a href="{% url 'analytics-dashboard' %}" class="btn-game-start">
+                ENTER DASHBOARD
+            </a>
+            {% else %}
+            <a href="{% url 'register' %}" class="btn-game-start">
+                INITIALIZE
+            </a>
+            {% endif %}
+        </div>
+        
     </div>
 </section>
 
