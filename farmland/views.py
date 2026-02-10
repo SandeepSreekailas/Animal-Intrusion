@@ -26,7 +26,7 @@ def farmland_create(request):
     return render(request, 'farmland/farmland_form.html', {'form': form, 'title': 'Add Farmland'})
 
 @login_required
-def farmland_update(request, pk):
+def farmland_update(request, pk): 
     farmland = get_object_or_404(Farmland, pk=pk, user=request.user)
     if request.method == 'POST':
         form = FarmlandForm(request.POST, instance=farmland)

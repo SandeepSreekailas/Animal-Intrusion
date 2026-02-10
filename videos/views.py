@@ -47,3 +47,5 @@ def video_delete(request, pk):
         video.delete()
         return redirect('video-list')
     return render(request, 'videos/video_confirm_delete.html', {'video': video})
+
+    

@@ -1,39 +1,254 @@
 {% extends 'base.html' %}
 
-{% block title %}Welcome - Animal Intrusion Detection{% endblock %}
+{% block title %}AnimalGuard - Smart Farm Protection{% endblock %}
 
-{% block content %}
-<div class="row align-items-center min-vh-75">
-    <div class="col-lg-6">
-        <h1 class="display-4 fw-bold mb-3">Protect Your Farmland with AI</h1>
-        <p class="lead text-muted mb-4">
-            Advanced real-time animal intrusion detection system.
-            Monitor 24/7, get instant alerts, and visualize data trends to keep your crops safe.
-        </p>
-        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-            {% if user.is_authenticated %}
-            <a href="{% url 'analytics-dashboard' %}" class="btn btn-primary btn-lg px-4 me-md-2">Go to Dashboard</a>
-            {% else %}
-            <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 me-md-2">Login</a>
-            <a href="{% url 'register' %}" class="btn btn-outline-secondary btn-lg px-4">Register</a>
-            {% endif %}
+{% block layout %}
+<style>
+    /* Custom Landing Page Styles */
+    body {
+        background-color: #fff !important;
+        /* Override base background */
+    }
+
+    /* Navbar */
+    .landing-nav {
+        background: #fff;
+        padding: 1rem 0;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #012970;
+        text-decoration: none;
+        letter-spacing: 1px;
+    }
+
+    .landing-nav .nav-link {
+        color: #013289;
+        font-weight: 600;
+        margin-left: 1.5rem;
+        transition: 0.3s;
+    }
+
+    .landing-nav .nav-link:hover {
+        color: #4154f1;
+    }
+
+    .btn-get-started {
+        background: #4154f1;
+        border: 2px solid #4154f1;
+        color: #fff;
+        border-radius: 50px;
+        padding: 8px 25px;
+        margin-left: 30px;
+        transition: 0.3s;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .btn-get-started:hover {
+        background: #2741d4;
+        color: #fff;
+    }
+
+    /* Hero Section */
+    .hero {
+        width: 100%;
+        height: 85vh;
+        background: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop') top center;
+        background-size: cover;
+        position: relative;
+        padding: 120px 0 60px 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero::before {
+        content: "";
+        background: rgba(1, 4, 136, 0.7);
+        /* Overlay darker than before for text pop */
+        position: absolute;
+        bottom: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero h1 {
+        margin: 0;
+        font-size: 48px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .hero h2 {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 15px 0 0 0;
+        font-size: 24px;
+        font-weight: 400;
+    }
+
+    .hero-btn {
+        margin-top: 30px;
+        display: inline-block;
+        padding: 12px 40px;
+        border-radius: 50px;
+        color: #fff;
+        background: #4154f1;
+        border: 2px solid #4154f1;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .hero-btn:hover {
+        background: #2e41d8;
+        border-color: #2e41d8;
+        color: #fff;
+    }
+
+    /* Features Section */
+    .features {
+        padding: 80px 0;
+        background: #fff;
+    }
+
+    .feature-box {
+        text-align: center;
+        padding: 40px 30px;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0px 5px 30px rgba(0, 10, 50, 0.08);
+        transition: all 0.3s ease-in-out;
+        height: 100%;
+    }
+
+    .feature-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 5px 40px rgba(0, 10, 50, 0.15);
+    }
+
+    .feature-icon {
+        font-size: 48px;
+        color: #4154f1;
+        margin-bottom: 20px;
+    }
+
+    .feature-title {
+        font-weight: 700;
+        margin-bottom: 15px;
+        font-size: 20px;
+        color: #012970;
+    }
+
+    .feature-text {
+        color: #666666;
+        line-height: 26px;
+    }
+
+    /* Footer */
+    .footer {
+        background: #012970;
+        /* Dark premium blue */
+        padding: 30px 0;
+        color: #fff;
+        font-size: 14px;
+        text-align: center;
+    }
+</style>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top landing-nav">
+    <div class="container">
+        <a class="nav-logo" href="{% url 'home' %}">AnimalGuard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                {% if user.is_authenticated %}
+                <li class="nav-item"><a href="{% url 'analytics-dashboard' %}" class="btn-get-started">Go to
+                        Dashboard</a></li>
+                {% else %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                <li class="nav-item"><a href="{% url 'register' %}" class="btn-get-started">Get Started</a></li>
+                {% endif %}
+            </ul>
         </div>
     </div>
-    <div class="col-lg-6 d-none d-lg-block text-center">
-        <!-- Minimal abstract graphic or placeholder -->
-        <div class="p-5 bg-light rounded-3 shadow-sm border"
-            style="height: 400px; display: flex; align-items: center; justify-content: center;">
-            <div class="text-muted">
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor"
-                    class="bi bi-shield-check" viewBox="0 0 16 16">
-                    <path
-                        d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.23-1.158-.412-1.619-.577a61.49 61.49 0 0 0-2.64-.703 61.49 61.49 0 0 0-2.383-.586m-1.213 2.295a63.233 63.233 0 0 1 2.383.586c.866.233 1.577.518 2.055.706-1.396 6.32-6.524 9.475-6.524 9.475S1.018 10.865.346 3.923a.148.148 0 0 1 .147-.154c.484-.047 1.056-.096 1.632-.146z" />
-                    <path
-                        d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
-                </svg>
-                <h3 class="mt-3">Secure Monitoring</h3>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero d-flex align-items-center">
+    <div class="container hero-content text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 data-aos="fade-up">Protect Your Crops with AI Intelligence</h1>
+                <h2 data-aos="fade-up" data-aos-delay="100">Real-time animal intrusion detection to secure your farmland
+                    day and night.</h2>
+                <div data-aos="fade-up" data-aos-delay="200">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'analytics-dashboard' %}" class="hero-btn">Go to Dashboard</a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="hero-btn">Get Started</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features">
+    <div class="container">
+        <div class="row gy-4">
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-box">
+                    <i class="bi bi-camera-video feature-icon"></i>
+                    <h3 class="feature-title">Real-Time Detection</h3>
+                    <p class="feature-text">Our advanced AI models analyze video feeds instantly to identify potential
+                        threats from wild animals before damage occurs.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-box">
+                    <i class="bi bi-bell feature-icon"></i>
+                    <h3 class="feature-title">Instant Alerts</h3>
+                    <p class="feature-text">Receive immediate notifications via email or dashboard alerts whenever an
+                        intrusion is detected on your property.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-box">
+                    <i class="bi bi-graph-up-arrow feature-icon"></i>
+                    <h3 class="feature-title">Smart Analytics</h3>
+                    <p class="feature-text">Visualize intrusion patterns over time with detailed charts to understand
+                        risks and improve your farm's defenses.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Simple Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="copyright">
+            &copy; Copyright <strong><span>AnimalGuard</span></strong>. All Rights Reserved
+        </div>
+        <div class="credits text-white-50 mt-2 small">
+            AI-Powered Farmland Protection
+        </div>
+    </div>
+</footer>
 {% endblock %}
