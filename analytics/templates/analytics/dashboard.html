@@ -1,261 +1,729 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Analytics Dashboard{% endblock %}
+{% block title %}AI Analytics Hub{% endblock %}
 
-{% block header_title %}Analytics Dashboard{% endblock %}
+{% block header_title %}Command Center{% endblock %}
 
 {% block content %}
+<!-- Use ECharts for advanced visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+<!-- Custom Dashboard Styles -->
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 15px;
+    }
+
+    .trend-badge {
+        font-size: 0.8rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+    }
+
+    /* AI Prediction Card */
+    .ai-card {
+        background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        color: white;
+        border: none;
+    }
+
+    .ai-card h5 {
+        font-weight: 700;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        opacity: 0.9;
+    }
+
+    .ai-card p {
+        font-size: 1.1rem;
+        font-weight: 300;
+        margin: 0;
+    }
+
+    /* Risk Score Gauge */
+    .risk-score-container {
+        position: relative;
+        text-align: center;
+    }
+
+    .risk-val {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #198754;
+    }
+
+    .risk-label {
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+</style>
+
 <div class="row mb-4 align-items-center">
     <div class="col-md-8">
-        <div class="welcome-section">
-            <h2 class="fw-bold mb-1 fade-in-up">
-                {{ greeting }},
-                <span class="text-gradient">{{ user.username|title }}</span>
-            </h2>
-            <p class="text-muted mb-0 fade-in-up delay-1">Here's what's happening on your farm.</p>
-        </div>
-        <style>
-            .text-gradient {
-                background: linear-gradient(45deg, #0d6efd, #0dcaf0);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
-
-            .fade-in-up {
-                opacity: 0;
-                transform: translateY(20px);
-                animation: fadeInUp 0.8s ease-out forwards;
-            }
-
-            .delay-1 {
-                animation-delay: 0.2s;
-            }
-
-            @keyframes fadeInUp {
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-        </style>
+        <h4 class="fw-bold text-dark">
+            {{ greeting }}, <span class="text-primary">{{ user.username|title }}</span>
+        </h4>
+        <p class="text-muted mb-0">System status: <span class="badge bg-success">Online & Monitoring</span></p>
     </div>
     <div class="col-md-4 text-end">
-        <a href="{% url 'analytics-export-csv' %}" class="btn btn-outline-primary me-2">
-            📥 Export CSV
-        </a>
-        <a href="{% url 'analytics-export-pdf' %}" class="btn btn-outline-danger">
-            📄 Export PDF
-        </a>
-    </div>
-</div>
-
-<!-- Summary Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-header">Total Videos</div>
-            <div class="card-body">
-                <h1 class="card-title">{{ total_videos }}</h1>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-header">Total Detections</div>
-            <div class="card-body">
-                <h1 class="card-title">{{ total_detections }}</h1>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-warning mb-3">
-            <div class="card-header">Total Alerts</div>
-            <div class="card-body">
-                <h1 class="card-title">{{ total_alerts }}</h1>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-danger mb-3">
-            <div class="card-header">Critical/High Severity</div>
-            <div class="card-body">
-                <h1 class="card-title">{{ high_sev }}</h1>
-                <small>Med: {{ medium_sev }} | Low: {{ low_sev }}</small>
-            </div>
+        <div class="btn-group">
+            <a href="{% url 'analytics-export-csv' %}" class="btn btn-outline-secondary btn-sm"><i
+                    class="bi bi-download"></i> CSV</a>
+            <a href="{% url 'analytics-export-pdf' %}" class="btn btn-outline-secondary btn-sm"><i
+                    class="bi bi-file-pdf"></i> PDF</a>
         </div>
     </div>
 </div>
 
-<!-- Charts Row 1 -->
+<!-- Row 1: AI Insights & Risk Score -->
 <div class="row mb-4">
+    <!-- AI Predictions -->
     <div class="col-md-8">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header bg-light fw-bold d-flex justify-content-between align-items-center">
-                <span>📈 Detections Over Time</span>
-                <div class="btn-group btn-group-sm" role="group">
-                    <a href="?range=day"
-                        class="btn btn-outline-primary {% if time_range == 'day' %}active{% endif %}">Day</a>
-                    <a href="?range=week"
-                        class="btn btn-outline-primary {% if time_range == 'week' %}active{% endif %}">Week</a>
-                    <a href="?range=month"
-                        class="btn btn-outline-primary {% if time_range == 'month' %}active{% endif %}">Month</a>
+        <div class="card stat-card ai-card h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-robot me-2 fs-4"></i>
+                    <h5>AI Predictive Insight</h5>
                 </div>
-            </div>
-            <div class="card-body">
-                <div style="position: relative; height: 350px; width: 100%;">
-                    <canvas id="timeChart"></canvas>
-                </div>
+                <p>{{ prediction_text|safe }}</p>
             </div>
         </div>
     </div>
+
+    <!-- Farm Safety Score -->
     <div class="col-md-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header bg-light fw-bold">⚠️ Severity Distribution</div>
-            <div class="card-body">
-                <div style="position: relative; height: 350px; width: 100%; display: flex; justify-content: center;">
-                    <canvas id="severityChart"></canvas>
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-3 fw-bold">Farm Safety Score</h6>
+                <div class="risk-score-container">
+                    <div class="risk-val" id="scoreValue">{{ safety_score }}</div>
+                    <div class="risk-label">{{ risk_level }}</div>
+                </div>
+                <div class="progress mt-3" style="height: 6px;">
+                    <div class="progress-bar {% if safety_score < 50 %}bg-danger{% elif safety_score < 80 %}bg-warning{% else %}bg-success{% endif %}"
+                        role="progressbar" style="width: {{ safety_score }}%"></div>
+                </div>
+                <small class="text-muted mt-2 d-block">Based on recent detection severity</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Stats Grid -->
+<div class="row mb-4 g-3">
+    <!-- Metric 1 -->
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center">
+                <div class="icon-box bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-camera-video"></i>
+                </div>
+                <div>
+                    <h3 class="mb-0 fw-bold">{{ total_videos }}</h3>
+                    <small class="text-muted">Active Cameras</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric 2 -->
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center">
+                <div class="icon-box bg-danger bg-opacity-10 text-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <h3 class="mb-0 fw-bold">{{ total_detections }}</h3>
+                    <small class="text-muted">Total Detections</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric 3 -->
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center">
+                <div class="icon-box bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-activity"></i>
+                </div>
+                <div>
+                    <h3 class="mb-0 fw-bold">{{ trend_sign }}{{ trend_pct }}%</h3>
+                    <small class="text-muted">Weekly Trend</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric 4 -->
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center">
+                <div class="icon-box bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h3 class="mb-0 fw-bold">{{ total_alerts }}</h3>
+                    <small class="text-muted">Alerts Sent</small>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Charts Row 2 -->
+<!-- Row 3: Complex Visualizations -->
 <div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header bg-light fw-bold">🚜 Farmland Intrusion Count</div>
+    <!-- Heatmap -->
+    <div class="col-lg-8">
+        <div class="card stat-card shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="fw-bold m-0"><i class="bi bi-grid-3x3 me-2 text-primary"></i>Intrusion Heatmap (Day vs Hour)
+                </h6>
+            </div>
             <div class="card-body">
-                <div style="position: relative; height: 300px; width: 100%;">
-                    <canvas id="farmChart"></canvas>
-                </div>
+                <div id="heatmapChart" style="height: 350px;"></div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header bg-light fw-bold">🦁 Animal Type Distribution</div>
+
+    <!-- Animal Distribution -->
+    <div class="col-lg-4">
+        <div class="card stat-card shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="fw-bold m-0"><i class="bi bi-pie-chart me-2 text-warning"></i>Species Breakdown</h6>
+            </div>
             <div class="card-body">
-                <div style="position: relative; height: 300px; width: 100%;">
-                    <canvas id="animalChart"></canvas>
-                </div>
+                <div id="speciesChart" style="height: 300px;"></div>
+                <!-- Custom Responsive Legend -->
+                <div id="speciesLegend" class="d-flex flex-wrap justify-content-center mt-3 gap-2"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Row 4: Timeline & Locations -->
+<div class="row">
+    <div class="col-12">
+        <div class="card stat-card shadow-sm">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold m-0"><i class="bi bi-graph-up me-2 text-success"></i>Activity Timeline</h6>
+                <div class="btn-group btn-group-sm">
+                    <a href="?range=day"
+                        class="btn btn-outline-light text-dark {% if time_range == 'day' %}active{% endif %}">Day</a>
+                    <a href="?range=week"
+                        class="btn btn-outline-light text-dark {% if time_range == 'week' %}active{% endif %}">Week</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="mainTimeChartWrapper" style="height: 300px; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Chart.js (Removed in favor of ECharts for consistency) -->
 <script>
-    // Parse JSON data from context
-    const dates = JSON.parse('{{ dates_json|safe }}');
-    const dateCounts = JSON.parse('{{ date_counts_json|safe }}');
-
-    const sevLabels = JSON.parse('{{ sev_labels_json|safe }}');
-    const sevData = JSON.parse('{{ sev_data_json|safe }}');
-
-    const farmLabels = JSON.parse('{{ farm_labels_json|safe }}');
-    const farmData = JSON.parse('{{ farm_data_json|safe }}');
-
+    // --- DATA INJECTION ---
+    const heatmapData = JSON.parse('{{ heatmap_data_json|safe }}');
     const animalLabels = JSON.parse('{{ animal_labels_json|safe }}');
     const animalData = JSON.parse('{{ animal_data_json|safe }}');
 
-    // Common Options for better rendering
-    const commonOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { boxWidth: 12, padding: 15 }
+    const timeLabels = JSON.parse('{{ dates_json|safe }}');
+    const timeData = JSON.parse('{{ date_counts_json|safe }}');
+
+    // --- COMMON ECHARTS CONFIG ---
+    // Detect dark mode (simple check if body has dark class, or just use safe colors)
+    const isDark = document.body.classList.contains('dark-mode');
+    const textColor = isDark ? '#e0e0e0' : '#333';
+
+    // --- 1. HEATMAP (Keep existing but ensure responsive) ---
+    const heatmapDom = document.getElementById('heatmapChart');
+    const myHeatmap = echarts.init(heatmapDom);
+
+    const hours = Array.from({ length: 24 }, (_, i) => i + ':00');
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const heatmapOption = {
+        tooltip: {
+            position: 'top',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            textStyle: { color: '#333' },
+            formatter: function (params) {
+                return `<strong>${days[params.value[1]]} @ ${hours[params.value[0]]}</strong><br/>${params.value[2]} Detections`;
             }
-        }
+        },
+        grid: { height: '70%', top: '10%', bottom: '15%' },
+        xAxis: {
+            type: 'category',
+            data: hours,
+            splitArea: { show: true },
+            axisLabel: { color: '#666' }
+        },
+        yAxis: {
+            type: 'category',
+            data: days,
+            splitArea: { show: true },
+            axisLabel: { color: '#666' }
+        },
+        visualMap: {
+            min: 0,
+            max: 10,
+            calculable: true,
+            orient: 'horizontal',
+            left: 'center',
+            bottom: '0%',
+            inRange: { color: ['#f8f9fa', '#d1e7dd', '#198754', '#dc3545'] }
+        },
+        series: [{
+            name: 'Intrusions',
+            type: 'heatmap',
+            data: heatmapData,
+            label: { show: false },
+            itemStyle: {
+                borderRadius: 4,
+                borderColor: '#fff',
+                borderWidth: 1
+            }
+        }]
     };
+    myHeatmap.setOption(heatmapOption);
 
-    // 1. Time Chart (Line)
-    new Chart(document.getElementById('timeChart'), {
-        type: 'line',
-        data: {
-            labels: dates,
-            datasets: [{
-                label: 'Detections',
-                data: dateCounts,
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                tension: 0.3,
-                fill: true,
-                pointRadius: 3
-            }]
-        },
-        options: {
-            ...commonOptions,
-            scales: {
-                y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
-                x: { grid: { display: false } }
+    // --- 2. SPECIES BREAKDOWN (Donut) ---
+    const speciesDom = document.getElementById('speciesChart');
+    const speciesPie = echarts.init(speciesDom);
+
+    const pieData = animalLabels.map((label, idx) => ({ value: animalData[idx], name: label }));
+    const pieColors = ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107', '#198754'];
+
+    const pieOption = {
+        tooltip: { trigger: 'item' },
+        legend: { show: false }, // Disable default legend
+        color: pieColors,
+        series: [
+            {
+                name: 'Species',
+                type: 'pie',
+                radius: ['45%', '70%'], // Slightly larger donut
+                center: ['50%', '50%'], // Centered
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 10,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                label: { show: false, position: 'center' },
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: 20,
+                        fontWeight: 'bold',
+                        color: textColor
+                    }
+                },
+                labelLine: { show: false },
+                data: pieData
             }
-        }
-    });
+        ]
+    };
+    speciesPie.setOption(pieOption);
 
-    // 2. Severity Chart (Doughnut - cleaner than Pie for dashboard)
-    new Chart(document.getElementById('severityChart'), {
-        type: 'doughnut',
-        data: {
-            labels: sevLabels,
-            datasets: [{
-                data: sevData,
-                backgroundColor: ['#dc3545', '#ffc107', '#0d6efd', '#198754'],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            ...commonOptions,
-            cutout: '60%',
-        }
-    });
+    // --- CUSTOM LEGEND GENERATION ---
+    const legendContainer = document.getElementById('speciesLegend');
+    if (pieData.length > 0) {
+        pieData.forEach((item, index) => {
+            const color = pieColors[index % pieColors.length];
+            // Create legend item
+            const itemDiv = document.createElement('div');
+            // Responsive Flexbox Layout
+            itemDiv.className = 'd-flex align-items-center px-2 py-1 border rounded bg-light';
+            itemDiv.style.fontSize = '0.85rem';
+            itemDiv.style.minWidth = 'fit-content'; // Prevent crushing
 
-    // 3. Farmland Chart (Bar)
-    new Chart(document.getElementById('farmChart'), {
-        type: 'bar',
-        data: {
-            labels: farmLabels,
-            datasets: [{
-                label: 'Intrusions',
-                data: farmData,
-                backgroundColor: '#198754',
-                borderRadius: 4
-            }]
+            itemDiv.innerHTML = `
+                <span style="width: 10px; height: 10px; background-color: ${color}; border-radius: 50%; margin-right: 8px; flex-shrink: 0;"></span>
+                <span class="text-truncate" style="max-width: 150px;" title="${item.name}">${item.name}</span>
+                <span class="ms-2 fw-bold text-muted small">${item.value}</span>
+            `;
+            legendContainer.appendChild(itemDiv);
+        });
+    } else {
+        legendContainer.innerHTML = '<span class="text-muted small">No data available</span>';
+    }
+
+
+    // --- 3. ACTIVITY TIMELINE (Area Chart - ECharts) ---
+    // Replaces the "terrible" Chart.js line chart
+    const timelineDom = document.getElementById('mainTimeChartWrapper');
+    const timeChart = echarts.init(timelineDom);
+
+    const timeOption = {
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            textStyle: { color: '#333' }
         },
-        options: {
-            ...commonOptions,
-            scales: {
-                y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
-                x: { grid: { display: false } }
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: timeLabels,
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: '#666' }
+        },
+        yAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { type: 'dashed', color: '#eee' } }
+        },
+        series: [
+            {
+                name: 'Detections',
+                type: 'line',
+                smooth: true, // Smooth curve
+                symbol: 'none', // Cleaner look
+                lineStyle: { width: 4, color: '#0d6efd' },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(13, 110, 253, 0.5)' },
+                        { offset: 1, color: 'rgba(13, 110, 253, 0.0)' }
+                    ])
+                },
+                data: timeData
             }
-        }
-    });
+        ]
+    };
+    timeChart.setOption(timeOption);
 
-    // 4. Animal Chart (Horizontal Bar for better label reading)
-    new Chart(document.getElementById('animalChart'), {
-        type: 'bar',
-        indexAxis: 'y',
-        data: {
-            labels: animalLabels,
-            datasets: [{
-                label: 'Count',
-                data: animalData,
-                backgroundColor: '#fd7e14',
-                borderRadius: 4
-            }]
-        },
-        options: {
-            ...commonOptions,
-            scales: {
-                x: { beginAtZero: true, grid: { borderDash: [2, 2] } },
-                y: { grid: { display: false } }
-            }
-        }
+
+    // Resize Listener
+    window.addEventListener('resize', function () {
+        myHeatmap.resize();
+        speciesPie.resize();
+        timeChart.resize();
     });
+</script>
+
+<!-- TONY STARK AI ASSISTANT MODULE -->
+<div id="ai-assistant-container">
+    <!-- 1. Floating Orb (Closed State) -->
+    <div id="ai-orb" onclick="toggleAI()">
+        <div class="orb-core"></div>
+        <div class="orb-ring"></div>
+    </div>
+
+    <!-- 2. Chat Interface (Open State) -->
+    <div id="ai-interface" class="d-none">
+        <div class="ai-header">
+            <span class="text-cyan"><i class="bi bi-cpu-fill me-2"></i>F.R.I.D.A.Y. SYSTEM</span>
+            <button class="btn btn-sm text-cyan" onclick="toggleAI()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div id="ai-chat-history" class="ai-body">
+            <!-- Messages go here -->
+            <div class="ai-msg system">
+                System Online. Biometric scan complete.<br>Welcome back, Boss. How can I help?
+            </div>
+        </div>
+        <div class="ai-input-area">
+            <input type="text" id="ai-input" placeholder="Enter command..." onkeypress="handleAIKey(event)">
+            <button class="btn btn-sm btn-cyan" onclick="sendAICommand()"><i class="bi bi-send-fill"></i></button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* VARIABLES */
+    :root {
+        --neon-cyan: #00f3ff;
+        --hud-bg: rgba(10, 20, 30, 0.95);
+        --hud-border: 1px solid rgba(0, 243, 255, 0.3);
+    }
+
+    /* CONTAINER */
+    #ai-assistant-container {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
+        font-family: 'Courier New', Courier, monospace;
+        /* Tech font */
+    }
+
+    /* ORB STYLES */
+    #ai-orb {
+        width: 60px;
+        height: 60px;
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+
+    #ai-orb:hover {
+        transform: scale(1.1);
+    }
+
+    .orb-core {
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, #fff, var(--neon-cyan));
+        border-radius: 50%;
+        box-shadow: 0 0 20px var(--neon-cyan);
+        animation: pulse 2s infinite;
+    }
+
+    .orb-ring {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        width: 80px;
+        height: 80px;
+        border: 2px solid var(--neon-cyan);
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 4s linear infinite;
+    }
+
+    /* INTERFACE STYLES */
+    #ai-interface {
+        width: 350px;
+        height: 450px;
+        background: var(--hud-bg);
+        border: var(--hud-border);
+        border-radius: 10px;
+        box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        margin-bottom: 20px;
+        /* Space above orb */
+    }
+
+    .ai-header {
+        padding: 10px 15px;
+        border-bottom: var(--hud-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0, 243, 255, 0.1);
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .ai-body {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        color: #e0f7fa;
+        font-size: 0.9rem;
+    }
+
+    .ai-msg {
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        border-radius: 5px;
+        line-height: 1.4;
+        animation: fadeIn 0.3s;
+    }
+
+    .ai-msg.system {
+        background: rgba(0, 243, 255, 0.1);
+        border-left: 3px solid var(--neon-cyan);
+        align-self: flex-start;
+    }
+
+    .ai-msg.user {
+        background: rgba(255, 255, 255, 0.1);
+        border-right: 3px solid #fff;
+        text-align: right;
+        margin-left: 50px;
+    }
+
+    .ai-input-area {
+        padding: 10px;
+        border-top: var(--hud-border);
+        display: flex;
+        gap: 10px;
+    }
+
+    #ai-input {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(0, 243, 255, 0.3);
+        color: var(--neon-cyan);
+        padding: 8px;
+        border-radius: 4px;
+        outline: none;
+    }
+
+    #ai-input:focus {
+        border-color: var(--neon-cyan);
+    }
+
+    .text-cyan {
+        color: var(--neon-cyan);
+    }
+
+    .btn-cyan {
+        background: var(--neon-cyan);
+        color: #000;
+        border: none;
+        font-weight: bold;
+    }
+
+    .btn-cyan:hover {
+        background: #fff;
+        box-shadow: 0 0 10px #fff;
+    }
+
+    /* UTILS */
+    .d-none {
+        display: none !important;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes pulse {
+        0% {
+            opacity: 0.8;
+        }
+
+        50% {
+            opacity: 1;
+            box-shadow: 0 0 30px var(--neon-cyan);
+        }
+
+        100% {
+            opacity: 0.8;
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    function toggleAI() {
+        const ui = document.getElementById('ai-interface');
+        const orb = document.getElementById('ai-orb');
+        if (ui.classList.contains('d-none')) {
+            ui.classList.remove('d-none');
+            // Animate open
+            ui.style.opacity = 0;
+            setTimeout(() => ui.style.opacity = 1, 50);
+            orb.classList.add('d-none');
+        } else {
+            ui.classList.add('d-none');
+            orb.classList.remove('d-none');
+        }
+    }
+
+    function handleAIKey(e) {
+        if (e.key === 'Enter') sendAICommand();
+    }
+
+    async function sendAICommand() {
+        const input = document.getElementById('ai-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        // 1. Add User Message
+        addMessage(text, 'user');
+        input.value = '';
+
+        // 2. Simulated Typing Delay (Tony Stark feel)
+        const typingId = addMessage('<span class="blink">_</span> processing...', 'system');
+
+        try {
+            // 3. Backend Call
+            const response = await fetch("{% url 'ai-query' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ query: text })
+            });
+
+            const data = await response.json();
+
+            // Remove typing indicator
+            document.getElementById(typingId).remove();
+
+            // 4. Add System Response
+            if (data.response) {
+                typewriterEffect(data.response, addMessage('', 'system'));
+            } else {
+                addMessage("Connection error to mainframe.", 'system');
+            }
+
+        } catch (err) {
+            console.error(err);
+            addMessage("Error: Neural Link Offline.", 'system');
+        }
+    }
+
+    function addMessage(html, type) {
+        const history = document.getElementById('ai-chat-history');
+        const div = document.createElement('div');
+        div.className = `ai-msg ${type}`;
+        div.id = 'msg-' + Date.now();
+        div.innerHTML = html;
+        history.appendChild(div);
+        history.scrollTop = history.scrollHeight;
+        return div.id;
+    }
+
+    // Cool typewriter effect for AI text
+    function typewriterEffect(html, divId) {
+        const div = document.getElementById(divId);
+        // Reset valid HTML for immediate render if complex, or type char by char
+        // For rich HTML (bold, colors), simple typewriting is hard. 
+        // Strategy: Fade in quickly or just show it.
+        // Let's do a simple "glitch" reveal or fast fade for HTML content.
+        div.innerHTML = html;
+        // Optionally play sound here
+    }
 </script>
 {% endblock %}

@@ -6,18 +6,23 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.http import HttpResponse
 from django.db.models import Count
-from django.db.models.functions import TruncDate, TruncHour, TruncWeek, TruncMonth
+from django.db.models.functions import TruncDate, TruncHour, TruncWeek, TruncMonth, ExtractWeekDay, ExtractHour
 from django.contrib.auth.decorators import login_required
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import random
 
 from videos.models import Video
 from detection.models import Detection
 from alerts.models import Alert
 from farmland.models import Farmland
+from django.conf import settings
 
 @login_required
 def dashboard_view(request):
@@ -121,6 +126,69 @@ def dashboard_view(request):
     animal_labels = [item['animal_type'] for item in animal_stats]
     animal_data = [item['count'] for item in animal_stats]
 
+    # --- 6. ADVANCED AI: Heatmap Data (Weekday x Hour) ---
+    # 1=Sun, 7=Sat
+    heatmap_qs = Detection.objects.filter(video__user=request.user).annotate(
+        weekday=ExtractWeekDay('created_at'),
+        hour=ExtractHour('created_at')
+    ).values('weekday', 'hour').annotate(count=Count('id'))
+
+    # Format for ECharts: [[x, y, value], ...] -> [[hour, weekday, count]]
+    # We map 1-7 (Sun-Sat) to 0-6 (Sun-Sat) for array indexing if needed, 
+    # but ECharts usually takes category indices. Let's use 0-6 for Mon-Sun or Sun-Sat.
+    # Let's align with: 0=Mon, 1=Tue... 6=Sun for standard charts
+    # Django: 1=Sun, 2=Mon, ..., 7=Sat.
+    # Mapping to 0=Sun, ..., 6=Sat
+    heatmap_data = []
+    for item in heatmap_qs:
+        # User-friendly day index: 0=Sun, 1=Mon...
+        day_idx = item['weekday'] - 1 
+        hour_idx = item['hour']
+        count = item['count']
+        heatmap_data.append([hour_idx, day_idx, count])
+
+    # --- 7. ADVANCED AI: Farm Safety Score & Trends ---
+    # Trend: Last 7 days vs Previous 7 days
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    fourteen_days_ago = timezone.now() - timedelta(days=14)
+    
+    current_week_count = Detection.objects.filter(video__user=request.user, created_at__gte=seven_days_ago).count()
+    prev_week_count = Detection.objects.filter(video__user=request.user, created_at__gte=fourteen_days_ago, created_at__lt=seven_days_ago).count()
+    
+    if prev_week_count > 0:
+        trend_pct = int(((current_week_count - prev_week_count) / prev_week_count) * 100)
+    else:
+        trend_pct = 100 if current_week_count > 0 else 0
+
+    # Risk Score Algorithm (0-100, where 100 is Safe)
+    # Start at 100. Deduct for recent severe detections.
+    risk_deduction = 0
+    recent_dets = Detection.objects.filter(video__user=request.user, created_at__gte=seven_days_ago)
+    for d in recent_dets:
+        if d.severity == 'Critical': risk_deduction += 10
+        elif d.severity == 'High': risk_deduction += 5
+        elif d.severity == 'Medium': risk_deduction += 2
+        else: risk_deduction += 1
+    
+    safety_score = max(0, 100 - risk_deduction)
+    risk_level = "Safe"
+    if safety_score < 50: risk_level = "Critical"
+    elif safety_score < 80: risk_level = "Caution"
+
+    # --- 8. ADVANCED AI: Predictive Insights ---
+    # Find the most frequent (Day, Hour) tuple
+    prediction_text = "Analysis in progress... gathering data."
+    if heatmap_data:
+        # Find max count item
+        best_slot = max(heatmap_qs, key=lambda x: x['count'])
+        # Map back to string
+        days_map = {1: 'Sunday', 2: 'Monday', 3: 'Tuesday', 4: 'Wednesday', 5: 'Thursday', 6: 'Friday', 7: 'Saturday'}
+        p_day = days_map.get(best_slot['weekday'], 'Unknown')
+        p_hour = best_slot['hour']
+        prediction_text = f"High intrusion risk detected on <strong>{p_day}s around {p_hour}:00</strong> based on historical patterns."
+    elif total_detections == 0:
+        prediction_text = "System secure. No threats detected to establish a pattern."
+
     context = {
         'total_videos': total_videos,
         'total_detections': total_detections,
@@ -138,7 +206,15 @@ def dashboard_view(request):
         'farm_data_json': json.dumps(farm_data),
         'animal_labels_json': json.dumps(animal_labels),
         'animal_data_json': json.dumps(animal_data),
-        'animal_data_json': json.dumps(animal_data),
+        
+        # AI Data
+        'heatmap_data_json': json.dumps(heatmap_data),
+        'safety_score': safety_score,
+        'risk_level': risk_level,
+        'trend_pct': trend_pct,
+        'trend_sign': '+' if trend_pct > 0 else '',
+        'prediction_text': prediction_text,
+        
         'time_range': time_range,
         'greeting': "Good Morning" if timezone.localtime(timezone.now()).hour < 12 else "Good Afternoon" if timezone.localtime(timezone.now()).hour < 18 else "Good Evening"
     }
@@ -231,3 +307,108 @@ def reports_view(request):
     Renders a page for viewing/downloading reports.
     """
     return render(request, 'analytics/reports.html')
+
+@csrf_exempt
+@require_POST
+@login_required
+def ai_query(request):
+    """
+    Real AI Assistant Backend using Google Gemini.
+    Falls back to rule-based logic if API key is missing or fails.
+    """
+    try:
+        data = json.loads(request.body)
+        query = data.get('query', '').lower().strip()
+    except:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    user = request.user
+    
+    today = timezone.localtime(timezone.now()).date()
+    stats_today = Detection.objects.filter(video__user=user, created_at__date=today).count()
+    latest = Detection.objects.filter(video__user=user).order_by('-created_at').first()
+    
+    latest_info = "None"
+    if latest:
+        minutes_ago = int((timezone.now() - latest.created_at).total_seconds() / 60)
+        latest_info = f"{latest.animal_type} at {latest.video.farmland.name} ({minutes_ago} mins ago). Severity: {latest.severity}"
+    
+    api_key = getattr(settings, 'GEMINI_API_KEY', None)
+    
+    if api_key:
+        try:
+            # Import new SDK inside function
+            from google import genai
+            
+            client = genai.Client(api_key=api_key)
+            
+            # Get correct local time for the user
+            local_time = timezone.localtime(timezone.now()).strftime('%Y-%m-%d %I:%M %p')
+            
+            system_prompt = f"""
+            You are F.R.I.D.A.Y., an advanced AI security assistant for a farm monitoring system.
+            Speak like Tony Stark's AI (concise, professional, slightly witty, futuristic).
+            
+            CURRENT SYSTEM STATUS:
+            - User: {user.username}
+            - Intrusions Today: {stats_today}
+            - Latest Alert: {latest_info}
+            - System Time: {local_time}
+            
+            User Query: "{query}"
+            
+            Answer the user based on the status. Use HTML formatting (<b>, <br>) for readability.
+            Keep it short (under 50 words unless asked for detail).
+            """
+            
+            # Using the new Client API
+            # Implement Fallback Strategy for Quota Limits (429) or Missing Models (404)
+            candidate_models = [
+                'gemini-2.0-flash-lite',       # Often lighter/cheaper
+                'gemini-2.0-flash',            # Standard v2
+                'gemini-flash-lite-latest',    # Stable Lite alias
+                'gemini-2.0-flash-lite-001',   # Specific version
+                'gemini-1.5-flash'             # Old faithful (if available)
+            ]
+            
+            response = None
+            last_error = None
+            
+            for model_name in candidate_models:
+                try:
+                    # print(f"DEBUG: Trying AI Model: {model_name}")
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=system_prompt
+                    )
+                    if response.text:
+                        break # Success!
+                except Exception as e:
+                    last_error = e
+                    # Continue to next model
+                    continue
+            
+            if not response or not response.text:
+                print(f"All AI models failed. Last error: {last_error}")
+                raise ValueError("All AI models failed or quota exceeded.")
+                
+            return JsonResponse({'response': response.text, 'user': user.username})
+            
+        except ImportError:
+            print("Gemini API Error: google-genai module not installed.")
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print(f"Gemini API Error (New SDK): {e}")
+
+    # --- 3. FALLBACK (Rule-based) ---
+    response_text = "I'm having trouble connecting to the neural net (API Error). Engaging backup protocols...<br>"
+    
+    if 'status' in query:
+        response_text += f"System Online. {stats_today} intrusions detected today."
+    elif 'latest' in query:
+        response_text += f"Last detection: {latest_info}."
+    else:
+        response_text += "I can only report Status and Latest detections in offline mode."
+
+    return JsonResponse({'response': response_text, 'user': user.username})

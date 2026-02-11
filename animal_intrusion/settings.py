@@ -148,3 +148,5 @@ DETECTION_MIN_AREA_PERCENT = 0.002 # ~0.2% of screen
 DETECTION_MAX_MOTION_PERCENT = 0.60 # Reject if > 60% of screen moves (camera shift)
 DETECTION_MOTION_THRESHOLD = 40 # MOG2 varThreshold
 # Reload Trigger
+
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
