@@ -1,69 +1,198 @@
 {% extends "base.html" %}
 
-{% block title %}Upload Video{% endblock %}
+{% block title %}Data Uplink // Video Upload{% endblock %}
+
+{% block header_title %}DATA UPLINK{% endblock %}
 
 {% block content %}
+<style>
+    /* --- CYBER UPLOAD FORM STYLES --- */
+    :root {
+        --neon-cyan: #00f2ff;
+        --neon-blue: #0d6efd;
+        --bg-dark: #0a0a0a;
+        --glass: rgba(20, 20, 20, 0.7);
+        --input-bg: rgba(255, 255, 255, 0.05);
+    }
+
+    /* 1. Cyber Card */
+    .cyber-card {
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 242, 255, 0.2);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        position: relative;
+        padding: 2rem;
+        overflow: hidden;
+    }
+    
+    .cyber-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan));
+        box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    .form-header {
+        border-bottom: 1px solid #333;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+    }
+
+    .form-title {
+        font-family: 'Orbitron', sans-serif;
+        color: hite;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin: 0;
+        text-shadow: 0 0 10px rgba(13, 110, 253, 0.4);
+    }
+
+    /* 2. Inputs (Select & File) */
+    label {
+        color: var(--neon-cyan);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: 1px;
+        display: block;
+    }
+
+    select, input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        font-family: 'Nunito', sans-serif;
+        color: #06bbe4;
+        background-color: var(--input-bg);
+        border: 1px solid #444;
+        border-radius: 2px;
+        transition: 0.3s;
+    }
+
+    select:focus, input[type="file"]:focus {
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+        outline: none;
+        background-color: rgba(0, 242, 255, 0.05);
+    }
+
+    /* Custom File Input Styling Tweaks */
+    input[type="file"]::file-selector-button {
+        background-color: #333;
+        color: var(--neon-cyan);
+        border: 1px solid #555;
+        border-radius: 2px;
+        padding: 5px 10px;
+        margin-right: 15px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.7rem;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+        background-color: var(--neon-blue);
+        color: white;
+        border-color: var(--neon-blue);
+    }
+
+    .form-text {
+        color: #888;
+        font-size: 0.8rem;
+        font-family: monospace;
+        margin-top: 5px;
+    }
+
+    /* 3. Buttons */
+    .btn-upload {
+        background: var(--neon-cyan);
+        color: black;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        border: none;
+        padding: 12px 30px;
+        clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        transition: 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn-upload:hover {
+        background: white;
+        box-shadow: 0 0 20px var(--neon-cyan);
+        transform: translateY(-2px);
+    }
+
+    .btn-cancel {
+        color: #aaa;
+        text-decoration: none;
+        font-family: monospace;
+        transition: 0.3s;
+        text-transform: uppercase;
+    }
+
+    .btn-cancel:hover { color: white; text-shadow: 0 0 5px white; }
+
+</style>
+
 <div class="row min-vh-75 justify-content-center">
     <div class="col-md-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-light">
-                <h4 class="mb-0 fw-bold">📹 Upload New Video</h4>
+        <div class="cyber-card">
+            
+            <div class="form-header">
+                <h4 class="form-title">
+                    <i class="bi bi-cloud-arrow-up-fill me-2"></i> Upload Footage
+                </h4>
             </div>
-            <div class="card-body p-4">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
 
-                    <!-- Manual Field Rending for Bootstrap -->
-                    <div class="mb-3">
-                        <label for="{{ form.farmland.id_for_label }}" class="form-label fw-bold">Select Farmland</label>
-                        {{ form.farmland }}
-                        {% if form.farmland.errors %}
-                        <div class="text-danger small mt-1">{{ form.farmland.errors }}</div>
-                        {% endif %}
-                    </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
 
-                    <div class="mb-4">
-                        <label for="{{ form.video_file.id_for_label }}" class="form-label fw-bold">Video File</label>
-                        {{ form.video_file }}
-                        <div class="form-text">Supported formats: MP4, AVI, MOV</div>
-                        {% if form.video_file.errors %}
-                        <div class="text-danger small mt-1">{{ form.video_file.errors }}</div>
-                        {% endif %}
+                <div class="mb-4">
+                    <label for="{{ form.farmland.id_for_label }}">
+                        <i class="bi bi-geo-alt me-1"></i> TARGET SECTOR
+                    </label>
+                    {{ form.farmland }}
+                    {% if form.farmland.errors %}
+                    <div class="text-danger small mt-1" style="font-family: monospace;">
+                        [ERROR]: {{ form.farmland.errors.0 }}
                     </div>
+                    {% endif %}
+                </div>
 
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="{% url 'video-list' %}" class="text-decoration-none text-muted">Cancel</a>
-                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-cloud-upload"></i>
-                            Upload</button>
+                <div class="mb-4">
+                    <label for="{{ form.video_file.id_for_label }}">
+                        <i class="bi bi-film me-1"></i> SOURCE FILE
+                    </label>
+                    {{ form.video_file }}
+                    <div class="form-text">
+                        // SUPPORTED FORMATS: .MP4, .AVI, .MOV<br>
+                        // MAX SIZE: 50MB
                     </div>
-                </form>
-            </div>
+                    {% if form.video_file.errors %}
+                    <div class="text-danger small mt-1" style="font-family: monospace;">
+                        [ERROR]: {{ form.video_file.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-dark">
+                    <a href="{% url 'video-list' %}" class="btn-cancel">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-upload">
+                        <i class="bi bi-broadcast"></i> INITIATE UPLOAD
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-<style>
-    /* Styling for Django ModelChoiceField/FileField default widgets to look like Bootstrap */
-    select,
-    input[type="file"] {
-        display: block;
-        width: 100%;
-        padding: 0.375rem 0.75rem;
-        font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
-        color: #212529;
-        background-color: #fff;
-        background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: 0.375rem;
-    }
-
-    select:focus,
-    input[type="file"]:focus {
-        border-color: #86b7fe;
-        outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
-    }
-</style>
 {% endblock %}

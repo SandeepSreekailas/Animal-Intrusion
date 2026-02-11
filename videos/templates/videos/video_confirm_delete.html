@@ -1,20 +1,172 @@
 {% extends "base.html" %}
 
-{% block title %}Delete Video{% endblock %}
+{% block title %}WARNING // Delete Footage{% endblock %}
 
 {% block content %}
-<h2>Delete Video</h2>
-<p>Are you sure you want to delete this video?</p>
-<p><strong>{{ video.video_file.name }}</strong></p>
+<style>
+    /* --- RED ALERT THEME --- */
+    :root {
+        --neon-red: #ff3333;
+        --bg-dark: #0a0a0a;
+        --glass: rgba(20, 0, 0, 0.85);
+    }
 
-<div style="background-color: #ffcccc; padding: 10px; border: 1px solid red;">
-    WARNING: This will define delete the video file and all associated detection records.
+    /* Wrapper */
+    .danger-zone-wrapper {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Danger Card */
+    .cyber-card-danger {
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--neon-red);
+        box-shadow: 0 0 40px rgba(255, 51, 51, 0.15);
+        border-radius: 4px;
+        padding: 3rem;
+        text-align: center;
+        max-width: 550px;
+        width: 100%;
+        position: relative;
+    }
+
+    /* Top Decorative Line */
+    .cyber-card-danger::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--neon-red);
+        box-shadow: 0 0 15px var(--neon-red);
+    }
+
+    /* Icons & Text */
+    .warning-icon {
+        font-size: 4rem;
+        color: var(--neon-red);
+        margin-bottom: 1rem;
+        animation: glitchPulse 2s infinite;
+        text-shadow: 0 0 20px var(--neon-red);
+    }
+
+    @keyframes glitchPulse {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(0.98); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    .warning-title {
+        font-family: 'Orbitron', sans-serif;
+        color: white;
+        font-weight: 700;
+        letter-spacing: 2px;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+    }
+
+    /* The "File" Box */
+    .target-file {
+        background: rgba(255, 51, 51, 0.1);
+        border: 1px dashed var(--neon-red);
+        color: white;
+        font-family: monospace;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+        word-break: break-all;
+    }
+
+    .target-label {
+        display: block;
+        font-size: 0.7rem;
+        color: var(--neon-red);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-align: left;
+    }
+
+    /* Warning Text */
+    .impact-text {
+        color: #aaa;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+
+    /* Buttons */
+    .btn-purge {
+        background: var(--neon-red);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        letter-spacing: 1px;
+        clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        transition: 0.3s;
+        text-transform: uppercase;
+    }
+
+    .btn-purge:hover {
+        background: white;
+        color: var(--neon-red);
+        box-shadow: 0 0 25px var(--neon-red);
+        transform: translateY(-2px);
+    }
+
+    .btn-abort {
+        color: #888;
+        text-decoration: none;
+        font-family: monospace;
+        text-transform: uppercase;
+        font-weight: bold;
+        transition: 0.3s;
+        margin-right: 20px;
+    }
+
+    .btn-abort:hover {
+        color: white;
+        text-shadow: 0 0 5px white;
+    }
+</style>
+
+<div class="danger-zone-wrapper">
+    <div class="cyber-card-danger">
+        
+        <i class="bi bi-camera-video-off-fill warning-icon"></i>
+        
+        <h2 class="warning-title">Delete Footage?</h2>
+        
+        <div class="target-file">
+            <span class="target-label">TARGET FILE_ID:</span>
+            {{ video.video_file.name }}
+        </div>
+
+        <p class="impact-text">
+            <i class="bi bi-exclamation-triangle me-1 text-danger"></i>
+            <strong>SYSTEM ALERT:</strong> Executing this command will permanently erase the video file and scrub all associated AI detection logs from the database.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="d-flex justify-content-center align-items-center">
+                <a href="{% url 'video-list' %}" class="btn-abort">
+                    <i class="bi bi-arrow-return-left"></i> Abort
+                </a>
+                
+                <button type="submit" class="btn-purge">
+                    <i class="bi bi-trash3-fill"></i> CONFIRM DELETION
+                </button>
+            </div>
+        </form>
+
+    </div>
 </div>
-<br>
-
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Confirm Delete</button>
-    <a href="{% url 'video-list' %}">Cancel</a>
-</form>
 {% endblock %}

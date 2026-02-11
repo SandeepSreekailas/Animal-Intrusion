@@ -1,88 +1,268 @@
 {% extends "base.html" %}
 
-{% block title %}My Videos{% endblock %}
+{% block title %}Surveillance Feed // AnimalGuard{% endblock %}
+
+{% block header_title %}VIDEO INTEL{% endblock %}
 
 {% block content %}
+<style>
+    /* --- CYBER VIDEO FEED STYLES --- */
+    :root {
+        --neon-cyan: #00f2ff;
+        --neon-blue: #0d6efd;
+        --neon-green: #00ff41;
+        --neon-amber: #ffcc00;
+        --neon-red: #ff3333;
+        --bg-dark: #0a0a0a;
+        --glass: rgba(20, 20, 20, 0.7);
+    }
+
+    /* 1. Page Header */
+    .page-title {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px rgba(13, 110, 253, 0.4);
+    }
+
+    /* 2. Cyber Card Container */
+    .cyber-card {
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 242, 255, 0.2);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .cyber-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan));
+        box-shadow: 0 0 10px var(--neon-cyan);
+        z-index: 2;
+    }
+
+    /* 3. The Table */
+    .cyber-table {
+        width: 100%;
+        color: #ddd;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .cyber-table th {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--neon-cyan);
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+        background: rgba(13, 110, 253, 0.1);
+    }
+
+    .cyber-table td {
+        padding: 15px;
+        border-bottom: 1px solid #222;
+        font-family: 'Nunito', sans-serif;
+        vertical-align: middle;
+        transition: 0.2s;
+    }
+
+    .cyber-table tbody tr:hover td {
+        background: rgba(0, 242, 255, 0.05);
+    }
+
+    /* 4. Thumbnails */
+    .vid-thumbnail {
+        width: 100px;
+        height: 60px;
+        object-fit: cover;
+        border: 1px solid var(--neon-blue);
+        border-radius: 2px;
+        box-shadow: 0 0 5px rgba(13, 110, 253, 0.3);
+        transition: 0.3s;
+    }
+    .cyber-table tr:hover .vid-thumbnail {
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    .placeholder-thumb {
+        width: 100px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px dashed #555;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #555;
+    }
+
+    /* 5. Badges & Tech Specs */
+    .tech-badge {
+        font-family: monospace;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        background: rgba(0,0,0,0.5);
+        border: 1px solid #444;
+        color: #aaa;
+        border-radius: 2px;
+    }
+
+    .status-badge {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 2px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 1px solid;
+    }
+
+    .status-processed { color: var(--neon-green); border-color: var(--neon-green); background: rgba(0, 255, 65, 0.1); }
+    .status-processing { 
+        color: var(--neon-amber); 
+        border-color: var(--neon-amber); 
+        background: rgba(255, 204, 0, 0.1); 
+        animation: pulseStatus 1.5s infinite;
+    }
+    .status-pending { color: #888; border-color: #888; background: rgba(255, 255, 255, 0.05); }
+    .status-error { color: var(--neon-red); border-color: var(--neon-red); background: rgba(255, 51, 51, 0.1); }
+
+    @keyframes pulseStatus {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    /* 6. Buttons */
+    .btn-cyber-add {
+        background: linear-gradient(45deg, var(--neon-blue), #0044cc);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        transition: 0.3s;
+        text-decoration: none;
+        box-shadow: 0 0 15px rgba(13, 110, 253, 0.4);
+    }
+    .btn-cyber-add:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(13, 110, 253, 0.7); color: white; }
+
+    .btn-icon {
+        color: var(--neon-cyan);
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 5px 8px;
+        transition: 0.3s;
+    }
+    .btn-icon:hover { color: white; text-shadow: 0 0 10px var(--neon-cyan); }
+    .btn-icon-delete:hover { color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red); }
+
+</style>
+
 <div class="row align-items-center mb-4">
     <div class="col">
-        <h2 class="mb-0">📹 Video Feed</h2>
+        <h2 class="mb-0 page-title">
+            <i class="bi bi-camera-reels-fill me-2" style="color: var(--neon-cyan);"></i>
+            Video Feeds
+        </h2>
+        <small class="text-muted" style="font-family: monospace;">// LOGGED FOOTAGE: {{ videos.count }}</small>
     </div>
     <div class="col-auto">
-        <a href="{% url 'video-create' %}" class="btn btn-primary"><i class="bi bi-upload"></i> Upload New Video</a>
+        <a href="{% url 'video-create' %}" class="btn-cyber-add">
+            <i class="bi bi-upload me-1"></i> UPLOAD FOOTAGE
+        </a>
     </div>
 </div>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th style="width: 120px;">Thumbnail</th>
-                        <th>Details</th>
-                        <th>Farmland</th>
-                        <th>Duration</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for video in videos %}
-                    <tr>
-                        <td>
-                            {% if video.thumbnail %}
-                            <img src="{{ video.thumbnail.url }}" class="img-fluid rounded border"
-                                style="max-height: 60px; width: auto;" alt="Thumbnail">
-                            {% else %}
-                            <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted border"
-                                style="height: 60px; width: 80px;">
-                                <i class="bi bi-image"></i>
-                            </div>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{% url 'video-detail' video.pk %}"
-                                class="fw-bold text-decoration-none text-dark">{{ video.video_file.name }}</a>
-                            <div class="small text-muted">
-                                <span class="badge bg-secondary text-light">{{ video.resolution|default:"UNK" }}</span>
-                                <span class="ms-1">{{ video.fps|floatformat:1 }} FPS</span>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-light text-dark border">{{ video.farmland.name }}</span>
-                        </td>
-                        <td>{{ video.duration|default:"-" }}s</td>
-                        <td>
-                            {% if video.status == 'Processed' %}
-                            <span class="badge bg-success rounded-pill">Processed</span>
-                            {% elif video.status == 'Processing' %}
-                            <span class="badge bg-warning text-dark rounded-pill">Processing</span>
-                            {% elif video.status == 'Pending' %}
-                            <span class="badge bg-secondary rounded-pill">Pending</span>
-                            {% else %}
-                            <span class="badge bg-danger rounded-pill">{{ video.status }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end">
-                            <a href="{% url 'video-detail' video.pk %}" class="btn btn-sm btn-outline-primary me-1"><i
-                                    class="bi bi-eye"></i> View</a>
-                            <a href="{% url 'video-delete' video.pk %}" class="btn btn-sm btn-outline-danger"><i
-                                    class="bi bi-trash"></i></a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            <div class="mb-3"><i class="bi bi-camera-video display-4 text-secondary"></i></div>
-                            <h5>No videos uploaded yet.</h5>
-                            <a href="{% url 'video-create' %}" class="btn btn-outline-primary mt-2">Upload Your First
-                                Video</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<div class="cyber-card">
+    <div class="table-responsive">
+        <table class="cyber-table">
+            <thead>
+                <tr>
+                    <th style="width: 120px;">Preview</th>
+                    <th>File Data</th>
+                    <th>Sector ID</th>
+                    <th>Duration</th>
+                    <th>Analysis Status</th>
+                    <th class="text-end">Command</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for video in videos %}
+                <tr>
+                    <td>
+                        {% if video.thumbnail %}
+                        <img src="{{ video.thumbnail.url }}" class="vid-thumbnail" alt="Thumb">
+                        {% else %}
+                        <div class="placeholder-thumb">
+                            <i class="bi bi-eye-slash"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'video-detail' video.pk %}" class="text-white text-decoration-none fw-bold" style="letter-spacing: 0.5px;">
+                            {{ video.video_file.name|truncatechars:25 }}
+                        </a>
+                        <div class="mt-1">
+                            <span class="tech-badge">{{ video.resolution|default:"UNK" }}</span>
+                            <span class="tech-badge ms-1">{{ video.fps|floatformat:1 }} FPS</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="color: var(--neon-cyan); font-family: monospace;">
+                            <i class="bi bi-geo-alt me-1"></i>{{ video.farmland.name }}
+                        </span>
+                    </td>
+                    <td style="font-family: monospace; color: #aaa;">{{ video.duration|default:"--" }}s</td>
+                    <td>
+                        {% if video.status == 'Processed' %}
+                            <span class="status-badge status-processed"><i class="bi bi-check2"></i> COMPLETE</span>
+                        {% elif video.status == 'Processing' %}
+                            <span class="status-badge status-processing"><i class="bi bi-activity"></i> ANALYZING</span>
+                        {% elif video.status == 'Pending' %}
+                            <span class="status-badge status-pending"><i class="bi bi-hourglass"></i> QUEUED</span>
+                        {% else %}
+                            <span class="status-badge status-error"><i class="bi bi-exclamation-triangle"></i> ERROR</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'video-detail' video.pk %}" class="btn-icon" title="View Intelligence">
+                            <i class="bi bi-eye-fill fs-5"></i>
+                        </a>
+                        <a href="{% url 'video-delete' video.pk %}" class="btn-icon btn-icon-delete" title="Delete Log">
+                            <i class="bi bi-trash3-fill fs-5"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <div style="opacity: 0.5;">
+                            <i class="bi bi-camera-video-off display-4 text-secondary"></i>
+                            <h5 class="mt-3" style="font-family: 'Orbitron', sans-serif; color: #555;">NO SIGNAL</h5>
+                            <p class="small text-muted mb-3">No footage logs found in the database.</p>
+                            <a href="{% url 'video-create' %}" class="btn-icon" style="border: 1px solid #444; border-radius: 4px;">
+                                UPLOAD FIRST LOG
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

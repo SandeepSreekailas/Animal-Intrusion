@@ -1,54 +1,223 @@
 {% extends 'base.html' %}
 
-{% block title %}Detections{% endblock %}
+{% block title %}Threat Log // Global Detections{% endblock %}
+
+{% block header_title %}GLOBAL THREAT LOG{% endblock %}
 
 {% block content %}
-<div class="card shadow-sm">
-    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">🔍 All Detections</h5>
-        <span class="badge bg-primary rounded-pill">{{ detections.count }} Events</span>
+<style>
+    /* --- CYBER THREAT LOG STYLES --- */
+    :root {
+        --neon-cyan: #00f2ff;
+        --neon-blue: #0d6efd;
+        --neon-red: #ff3333;
+        --neon-amber: #ffcc00;
+        --neon-green: #00ff41;
+        --bg-dark: #0a0a0a;
+        --glass: rgba(20, 20, 20, 0.7);
+    }
+
+    /* 1. Header & Stats */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #333;
+        padding-bottom: 1rem;
+    }
+
+    .header-title {
+        font-family: 'Orbitron', sans-serif;
+        color: white;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(13, 110, 253, 0.4);
+    }
+
+    .stat-badge {
+        background: rgba(13, 110, 253, 0.1);
+        border: 1px solid var(--neon-blue);
+        color: var(--neon-cyan);
+        padding: 5px 15px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        border-radius: 2px;
+        box-shadow: 0 0 10px rgba(13, 110, 253, 0.2);
+    }
+
+    /* 2. Cyber Card */
+    .cyber-card {
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 242, 255, 0.2);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .cyber-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan));
+        box-shadow: 0 0 10px var(--neon-cyan);
+        z-index: 2;
+    }
+
+    /* 3. The Table */
+    .cyber-table { width: 100%; color: #ddd; border-collapse: separate; border-spacing: 0; }
+    
+    .cyber-table th {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--neon-cyan);
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+        background: rgba(13, 110, 253, 0.1);
+    }
+
+    .cyber-table td {
+        padding: 15px;
+        border-bottom: 1px solid #222;
+        font-family: 'Nunito', sans-serif;
+        vertical-align: middle;
+        transition: 0.2s;
+    }
+
+    .cyber-table tr:hover td {
+        background: rgba(0, 242, 255, 0.05);
+        color: white;
+    }
+
+    /* 4. Severity Badges */
+    .badge-severity {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border: 1px solid;
+        border-radius: 2px;
+        letter-spacing: 1px;
+        display: inline-block;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    .sev-critical { 
+        color: var(--neon-red); border-color: var(--neon-red); background: rgba(255, 51, 51, 0.1); 
+        box-shadow: 0 0 10px rgba(255, 51, 51, 0.2);
+        animation: pulseCritical 2s infinite;
+    }
+    .sev-high { color: var(--neon-amber); border-color: var(--neon-amber); background: rgba(255, 204, 0, 0.1); }
+    .sev-medium { color: var(--neon-blue); border-color: var(--neon-blue); background: rgba(13, 110, 253, 0.1); }
+    .sev-low { color: #888; border-color: #888; background: rgba(255, 255, 255, 0.05); }
+
+    @keyframes pulseCritical {
+        0% { box-shadow: 0 0 5px rgba(255, 51, 51, 0.2); }
+        50% { box-shadow: 0 0 15px rgba(255, 51, 51, 0.6); }
+        100% { box-shadow: 0 0 5px rgba(255, 51, 51, 0.2); }
+    }
+
+    /* 5. Data Points */
+    .data-time { font-family: monospace; color: var(--neon-cyan); letter-spacing: -0.5px; }
+    .data-conf { font-family: monospace; color: #aaa; }
+    
+    .btn-view-source {
+        color: #fff;
+        font-size: 0.8rem;
+        text-decoration: none;
+        border: 1px solid #444;
+        padding: 4px 8px;
+        border-radius: 2px;
+        transition: 0.3s;
+        background: rgba(255,255,255,0.05);
+    }
+    .btn-view-source:hover {
+        border-color: var(--neon-blue);
+        background: var(--neon-blue);
+        box-shadow: 0 0 10px var(--neon-blue);
+    }
+
+</style>
+
+<div class="page-header">
+    <h4 class="header-title"><i class="bi bi-shield-exclamation me-2"></i> Intrusion Log</h4>
+    <div class="stat-badge">
+        EVENTS LOGGED: <span class="fw-bold text-white">{{ detections.count }}</span>
     </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover table-striped mb-0 align-middle">
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Animal</th>
-                        <th>Confidence</th>
-                        <th>Severity</th>
-                        <th>Farmland</th>
-                        <th>Video ID</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for det in detections %}
-                    <tr>
-                        <td><i class="bi bi-clock"></i> {{ det.created_at|date:"Y-m-d H:i:s" }}</td>
-                        <td>{{ det.animal_type }}</td>
-                        <td>{{ det.confidence|floatformat:2 }}</td>
-                        <td>
-                            {% if det.severity == 'Critical' %}
-                            <span class="badge bg-danger">Critical</span>
-                            {% elif det.severity == 'High' %}
-                            <span class="badge bg-warning text-dark">High</span>
-                            {% elif det.severity == 'Medium' %}
-                            <span class="badge bg-info text-dark">Medium</span>
-                            {% else %}
-                            <span class="badge bg-secondary">Low</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ det.video.farmland.name }}</td>
-                        <td><a href="{% url 'video-detail' det.video.id %}">#{{ det.video.id }}</a></td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">No detections recorded yet.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+</div>
+
+<div class="cyber-card">
+    <div class="table-responsive">
+        <table class="cyber-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Entity Class</th>
+                    <th>AI Confidence</th>
+                    <th>Threat Level</th>
+                    <th>Sector ID</th>
+                    <th>Evidence Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for det in detections %}
+                <tr>
+                    <td>
+                        <span class="data-time">
+                            <i class="bi bi-clock-history me-1"></i>{{ det.created_at|date:"Y-m-d H:i:s" }}
+                        </span>
+                    </td>
+                    <td class="fw-bold text-white">{{ det.animal_type }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="progress" style="height: 4px; width: 50px; margin-right: 10px; background: #333;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ det.confidence|floatformat:0 }}%"></div>
+                            </div>
+                            <span class="data-conf">{{ det.confidence|floatformat:2 }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if det.severity == 'Critical' %}
+                            <span class="badge-severity sev-critical">CRITICAL</span>
+                        {% elif det.severity == 'High' %}
+                            <span class="badge-severity sev-high">HIGH</span>
+                        {% elif det.severity == 'Medium' %}
+                            <span class="badge-severity sev-medium">MEDIUM</span>
+                        {% else %}
+                            <span class="badge-severity sev-low">LOW</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-family: monospace; color: #bbb;">
+                        <i class="bi bi-geo-alt me-1"></i>{{ det.video.farmland.name }}
+                    </td>
+                    <td>
+                        <a href="{% url 'video-detail' det.video.id %}" class="btn-view-source">
+                            <i class="bi bi-eye-fill me-1"></i> VIEW INTEL
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <div style="opacity: 0.5;">
+                            <i class="bi bi-shield-check display-4 text-secondary"></i>
+                            <h5 class="mt-3" style="font-family: 'Orbitron', sans-serif; color: #555;">SECURE</h5>
+                            <p class="small text-muted mb-0">No active threats recorded in the database.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

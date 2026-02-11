@@ -1,63 +1,214 @@
 {% extends 'base.html' %}
 
-{% block content %}
-<div class="row mb-5">
-    <div class="col-md-12">
-        <h2 class="section-title">Detection Alerts</h2>
+{% block title %}System Notifications{% endblock %}
 
-        {% if alerts %}
-        <div class="card shadow-lg p-4">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Severity</th>
-                            <th>Message</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for alert in alerts %}
-                        <tr class="{% if not alert.is_read %}fw-bold table-active{% endif %}">
-                            <td>
-                                {% if alert.severity == 'Critical' %}
-                                <span class="badge bg-danger">Critical</span>
-                                {% elif alert.severity == 'High' %}
-                                <span class="badge bg-warning text-dark">High</span>
-                                {% elif alert.severity == 'Medium' %}
-                                <span class="badge bg-info">Medium</span>
-                                {% else %}
-                                <span class="badge bg-secondary">Info</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ alert.message }}</td>
-                            <td>{{ alert.created_at|date:"M d, Y H:i" }}</td>
-                            <td>
-                                {% if alert.is_read %}
-                                <span class="text-muted">Read</span>
-                                {% else %}
-                                <span class="text-primary">Unread</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if not alert.is_read %}
-                                <form action="{% url 'mark-alert-read' alert.pk %}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-primary">Mark Read</button>
-                                </form>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        {% else %}
-        <div class="alert alert-info shadow-sm">No alerts found.</div>
-        {% endif %}
+{% block header_title %}SYSTEM NOTIFICATIONS{% endblock %}
+
+{% block content %}
+<style>
+    /* --- CYBER ALERT FEED STYLES --- */
+    :root {
+        --neon-cyan: #00f2ff;
+        --neon-blue: #0d6efd;
+        --neon-red: #ff3333;
+        --neon-amber: #ffcc00;
+        --neon-green: #00ff41;
+        --bg-dark: #0a0a0a;
+        --glass: rgba(20, 20, 20, 0.7);
+    }
+
+    /* 1. Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #333;
+        padding-bottom: 1rem;
+    }
+
+    .header-title {
+        font-family: 'Orbitron', sans-serif;
+        color: white;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(13, 110, 253, 0.4);
+    }
+
+    /* 2. Cyber Card */
+    .cyber-card {
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 242, 255, 0.2);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .cyber-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan));
+        box-shadow: 0 0 10px var(--neon-cyan);
+        z-index: 2;
+    }
+
+    /* 3. The Table */
+    .cyber-table { width: 100%; color: #ddd; border-collapse: separate; border-spacing: 0; }
+    
+    .cyber-table th {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--neon-cyan);
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+        background: rgba(13, 110, 253, 0.1);
+    }
+
+    .cyber-table td {
+        padding: 15px;
+        border-bottom: 1px solid #222;
+        font-family: 'Nunito', sans-serif;
+        vertical-align: middle;
+        transition: 0.2s;
+    }
+
+    /* 4. Row States (Read vs Unread) */
+    .row-unread {
+        background: rgba(13, 110, 253, 0.05);
+        border-left: 3px solid var(--neon-cyan);
+    }
+    .row-unread td { color: white; font-weight: 600; text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+    
+    .row-read {
+        opacity: 0.6;
+        background: transparent;
+    }
+    .row-read:hover { opacity: 1; background: rgba(255,255,255,0.02); }
+
+    /* 5. Severity Badges */
+    .alert-badge {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border: 1px solid;
+        border-radius: 2px;
+        letter-spacing: 1px;
+        display: inline-block;
+        min-width: 90px;
+        text-align: center;
+    }
+
+    .ab-critical { color: var(--neon-red); border-color: var(--neon-red); background: rgba(255, 51, 51, 0.1); box-shadow: 0 0 10px var(--neon-red); }
+    .ab-high { color: var(--neon-amber); border-color: var(--neon-amber); background: rgba(255, 204, 0, 0.1); }
+    .ab-medium { color: var(--neon-blue); border-color: var(--neon-blue); background: rgba(13, 110, 253, 0.1); }
+    .ab-info { color: #888; border-color: #888; background: rgba(255, 255, 255, 0.05); }
+
+    /* 6. Buttons */
+    .btn-ack {
+        background: transparent;
+        border: 1px solid var(--neon-blue);
+        color: var(--neon-blue);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.7rem;
+        padding: 5px 10px;
+        text-transform: uppercase;
+        transition: 0.3s;
+        cursor: pointer;
+    }
+    .btn-ack:hover {
+        background: var(--neon-blue);
+        color: white;
+        box-shadow: 0 0 15px var(--neon-blue);
+    }
+
+    .time-stamp { font-family: monospace; color: #888; font-size: 0.85rem; }
+
+</style>
+
+<div class="page-header">
+    <h4 class="header-title">
+        <i class="bi bi-bell me-2" style="color: var(--neon-cyan);"></i> Incoming Alerts
+    </h4>
+</div>
+
+{% if alerts %}
+<div class="cyber-card">
+    <div class="table-responsive">
+        <table class="cyber-table">
+            <thead>
+                <tr>
+                    <th>Priority Level</th>
+                    <th>System Message</th>
+                    <th>Timestamp</th>
+                    <th>Status</th>
+                    <th>Command</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alert in alerts %}
+                <tr class="{% if not alert.is_read %}row-unread{% else %}row-read{% endif %}">
+                    <td>
+                        {% if alert.severity == 'Critical' %}
+                            <span class="alert-badge ab-critical">CRITICAL</span>
+                        {% elif alert.severity == 'High' %}
+                            <span class="alert-badge ab-high">HIGH</span>
+                        {% elif alert.severity == 'Medium' %}
+                            <span class="alert-badge ab-medium">MEDIUM</span>
+                        {% else %}
+                            <span class="alert-badge ab-info">INFO</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ alert.message }}
+                    </td>
+                    <td>
+                        <span class="time-stamp">
+                            <i class="bi bi-clock me-1"></i>{{ alert.created_at|date:"M d, H:i" }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if alert.is_read %}
+                        <span style="color: #666; font-family: monospace;">[ARCHIVED]</span>
+                        {% else %}
+                        <span style="color: var(--neon-green); font-family: monospace; font-weight: bold;">[NEW]</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not alert.is_read %}
+                        <form action="{% url 'mark-alert-read' alert.pk %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-ack">
+                                <i class="bi bi-check2-square"></i> ACKNOWLEDGE
+                            </button>
+                        </form>
+                        {% else %}
+                        <i class="bi bi-check2-all text-muted" title="Read"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
+{% else %}
+<div class="cyber-card p-5 text-center">
+    <div style="opacity: 0.5;">
+        <i class="bi bi-shield-check display-1" style="color: var(--neon-green);"></i>
+        <h4 class="mt-3" style="font-family: 'Orbitron', sans-serif; color: #fff;">SYSTEM CLEAR</h4>
+        <p class="text-muted">No new alerts. Perimeter is secure.</p>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}
