@@ -8,14 +8,16 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Orbitron:wght@400;700;900&display=swap"
+        rel="stylesheet">
 
     <style>
         /* GLOBAL RESET */
         body {
             font-family: 'Nunito', sans-serif;
-            background-color: #f4f6f9; 
+            background-color: #f4f6f9;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
@@ -28,7 +30,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #050505; 
+            background-color: #050505;
             border-right: 1px solid #333;
             color: #fff;
             padding-top: 20px;
@@ -77,7 +79,7 @@
         }
 
         /* --- LAYOUT WRAPPERS (THE FIX) --- */
-        
+
         /* Layout for Dashboard: Pushes content right */
         .dashboard-wrapper {
             margin-left: 250px;
@@ -97,10 +99,115 @@
 
         /* Mobile Adjustments */
         @media (max-width: 992px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.show { transform: translateX(0); }
-            .dashboard-wrapper { margin-left: 0; }
-            .dashboard-navbar { left: 0; }
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .dashboard-wrapper {
+                margin-left: 0;
+            }
+
+            .dashboard-navbar {
+                left: 0;
+            }
+        }
+
+        /* --- TACTICAL PROFILE HUD --- */
+        .profile-hud {
+            display: flex;
+            align-items: center;
+            background: rgba(10, 10, 10, 0.8);
+            /* Dark Glass */
+            border: 1px solid #333;
+            padding: 6px 16px 6px 6px;
+            /* Spacing for the pill shape */
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            cursor: default;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Glow on Hover */
+        .profile-hud:hover {
+            border-color: #0d6efd;
+            /* Neon Blue Border */
+            box-shadow: 0 0 15px rgba(13, 110, 253, 0.3);
+        }
+
+        /* The Round Avatar Circle */
+        .profile-avatar {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #0d6efd, #00f2ff);
+            /* Cyber Gradient */
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-family: 'Orbitron', sans-serif;
+            /* Tech Font */
+            margin-right: 12px;
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.6);
+            /* Inner Glow */
+        }
+
+        /* Text Container */
+        .profile-meta {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+            margin-right: 15px;
+        }
+
+        .profile-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .profile-role {
+            font-size: 0.65rem;
+            color: #00f2ff;
+            /* Neon Cyan */
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        /* Pulsing Green Online Dot */
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: #00ff41;
+            /* Hacker Green */
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00ff41;
+            animation: signalPulse 2s infinite;
+        }
+
+        @keyframes signalPulse {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
     </style>
 </head>
@@ -109,86 +216,98 @@
 
     {% with url_name=request.resolver_match.url_name %}
     {% with is_dashboard=user.is_authenticated|yesno:"True,False" %}
-    
+
     {% if user.is_authenticated and url_name != 'home' and url_name != 'login' and url_name != 'register' %}
 
-        <nav class="sidebar d-flex flex-column" id="sidebar">
-            <div class="brand-title">
-                <h5><i class="bi bi-shield-check me-2"></i>AnimalGuard</h5>
-            </div>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="{% url 'analytics-dashboard' %}" class="nav-link {% if 'dashboard' in request.path %}active{% endif %}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'farmland-list' %}" class="nav-link {% if 'farmland' in request.path %}active{% endif %}">
-                        <i class="bi bi-tree"></i> My Farmlands
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'video-list' %}" class="nav-link {% if 'video' in request.path %}active{% endif %}">
-                        <i class="bi bi-camera-video"></i> Live Feeds
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'detection-list' %}" class="nav-link {% if 'detection' in request.path %}active{% endif %}">
-                        <i class="bi bi-bullseye"></i> Detections
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'alert-list' %}" class="nav-link {% if 'alert' in request.path %}active{% endif %}">
-                        <i class="bi bi-bell"></i> Alerts
-                    </a>
-                </li>
-                <li class="nav-item ">
-                    <a href="{% url 'settings' %}" class="nav-link">
-                        <i class="bi bi-gear"></i> Settings
-                    </a>
-                </li>
-                <li class="nav-item border-top mt-3 pt-3">
-                    <form action="{% url 'logout' %}" method="post" class="w-100">
-                        {% csrf_token %}
-                        <button type="submit" class="nav-link text-danger w-100 text-start border-0 bg-transparent">
-                            <i class="bi bi-box-arrow-right"></i> Logout
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        </nav>
-
-        <div class="dashboard-navbar">
-            <div class="d-flex align-items-center">
-                <button class="btn btn-outline-dark d-lg-none me-3" id="sidebarToggle">
-                    <i class="bi bi-list"></i>
-                </button>
-                <h5 class="mb-0 fw-bold text-dark">
-                    {% block header_title %}Overview{% endblock %}
-                </h5>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="badge bg-primary rounded-pill px-3 py-2">
-                    <i class="bi bi-person-circle me-2"></i> {{ user.username }}
-                </span>
-            </div>
+    <nav class="sidebar d-flex flex-column" id="sidebar">
+        <div class="brand-title">
+            <h5><i class="bi bi-shield-check me-2"></i>AnimalGuard</h5>
         </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="{% url 'analytics-dashboard' %}"
+                    class="nav-link {% if 'dashboard' in request.path %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'farmland-list' %}"
+                    class="nav-link {% if 'farmland' in request.path %}active{% endif %}">
+                    <i class="bi bi-tree"></i> My Farmlands
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'video-list' %}" class="nav-link {% if 'video' in request.path %}active{% endif %}">
+                    <i class="bi bi-camera-video"></i> Live Feeds
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'detection-list' %}"
+                    class="nav-link {% if 'detection' in request.path %}active{% endif %}">
+                    <i class="bi bi-bullseye"></i> Detections
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'alert-list' %}" class="nav-link {% if 'alert' in request.path %}active{% endif %}">
+                    <i class="bi bi-bell"></i> Alerts
+                </a>
+            </li>
+            <li class="nav-item ">
+                <a href="{% url 'settings' %}" class="nav-link">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </li>
+            <li class="nav-item border-top mt-3 pt-3">
+                <form action="{% url 'logout' %}" method="post" class="w-100">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link text-danger w-100 text-start border-0 bg-transparent">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="dashboard-navbar">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-outline-dark d-lg-none me-3" id="sidebarToggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <h5 class="mb-0 fw-bold text-dark">
+                {% block header_title %}Overview{% endblock %}
+            </h5>
+        </div>
+        <div class="profile-hud">
+            <div class="profile-avatar">
+                {{ user.username|first|upper }}
+            </div>
+
+            <div class="profile-meta">
+                <span class="profile-name">{{ user.username }}</span>
+                <span class="profile-role">OP-ACCESS // LVL 1</span>
+            </div>
+
+            <div class="status-indicator" title="System Online"></div>
+        </div>
+    </div>
     {% endif %}
 
-    <main class="{% if user.is_authenticated and url_name != 'home' and url_name != 'login' and url_name != 'register' %}dashboard-wrapper{% else %}public-wrapper{% endif %}">
-        
+    <main
+        class="{% if user.is_authenticated and url_name != 'home' and url_name != 'login' and url_name != 'register' %}dashboard-wrapper{% else %}public-wrapper{% endif %}">
+
         <div class="container-fluid p-0">
             {% if messages %}
-                <div class="position-fixed top-0 end-0 p-3" style="z-index: 2000">
+            <div class="position-fixed top-0 end-0 p-3" style="z-index: 2000">
                 {% for message in messages %}
-                    <div class="toast show align-items-center text-white bg-dark border-0 mb-2" role="alert">
-                        <div class="d-flex">
-                            <div class="toast-body">{{ message }}</div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                        </div>
+                <div class="toast show align-items-center text-white bg-dark border-0 mb-2" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">{{ message }}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                            data-bs-dismiss="toast"></button>
                     </div>
-                {% endfor %}
                 </div>
+                {% endfor %}
+            </div>
             {% endif %}
 
             {% block content %}{% endblock %}
@@ -202,11 +321,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const toggleBtn = document.getElementById('sidebarToggle');
-        if(toggleBtn) {
+        if (toggleBtn) {
             toggleBtn.addEventListener('click', function () {
                 document.getElementById('sidebar').classList.toggle('show');
             });
         }
     </script>
 </body>
+
 </html>
