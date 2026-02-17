@@ -20,3 +20,19 @@ ENV/
 
 # VS Code
 .vscode/
+
+# AI Models
+*.pt
+*.tflite
+models.txt
+available_models*.txt
+available_models_clean.txt
+# Temporary Scripts
+list_gemini_models*.py
+download_model*.py
+get_models.py
+test_*.py
+
+# Output & Logs
+output.txt
+runs/

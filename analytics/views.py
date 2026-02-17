@@ -24,6 +24,11 @@ from alerts.models import Alert
 from farmland.models import Farmland
 from django.conf import settings
 
+# IMPORT THE NEW LIBRARY
+from google import genai
+from google.genai import types
+from google import genai
+
 @login_required
 def dashboard_view(request):
     # --- 1. Summary Cards ---
@@ -313,8 +318,7 @@ def reports_view(request):
 @login_required
 def ai_query(request):
     """
-    Real AI Assistant Backend using Google Gemini.
-    Falls back to rule-based logic if API key is missing or fails.
+    FINAL WORKING VERSION: Uses Gemini 2.5/2.0 Models
     """
     try:
         data = json.loads(request.body)
@@ -324,91 +328,59 @@ def ai_query(request):
 
     user = request.user
     
+    # --- Context Data ---
     today = timezone.localtime(timezone.now()).date()
     stats_today = Detection.objects.filter(video__user=user, created_at__date=today).count()
     latest = Detection.objects.filter(video__user=user).order_by('-created_at').first()
     
     latest_info = "None"
     if latest:
-        minutes_ago = int((timezone.now() - latest.created_at).total_seconds() / 60)
-        latest_info = f"{latest.animal_type} at {latest.video.farmland.name} ({minutes_ago} mins ago). Severity: {latest.severity}"
-    
+        minutes = int((timezone.now() - latest.created_at).total_seconds() / 60)
+        latest_info = f"{latest.animal_type} ({latest.severity}) - {minutes}m ago"
+
+    # --- AI CLIENT ---
     api_key = getattr(settings, 'GEMINI_API_KEY', None)
-    
+    response_text = "Neural net offline."
+
     if api_key:
         try:
-            # Import new SDK inside function
-            from google import genai
-            
             client = genai.Client(api_key=api_key)
             
-            # Get correct local time for the user
-            local_time = timezone.localtime(timezone.now()).strftime('%Y-%m-%d %I:%M %p')
-            
             system_prompt = f"""
-            You are F.R.I.D.A.Y., an advanced AI security assistant for a farm monitoring system.
-            Speak like Tony Stark's AI (concise, professional, slightly witty, futuristic).
-            
-            CURRENT SYSTEM STATUS:
-            - User: {user.username}
-            - Intrusions Today: {stats_today}
-            - Latest Alert: {latest_info}
-            - System Time: {local_time}
-            
+            You are F.R.I.D.A.Y., a secure farm AI.
+            Status: User={user.username} | Intrusions Today={stats_today} | Last Alert={latest_info}.
             User Query: "{query}"
-            
-            Answer the user based on the status. Use HTML formatting (<b>, <br>) for readability.
-            Keep it short (under 50 words unless asked for detail).
+            Keep response short, professional, and helpful.
             """
             
-            # Using the new Client API
-            # Implement Fallback Strategy for Quota Limits (429) or Missing Models (404)
+            # THE CRITICAL FIX: Use the models YOU actually have
             candidate_models = [
-                'gemini-2.0-flash-lite',       # Often lighter/cheaper
-                'gemini-2.0-flash',            # Standard v2
-                'gemini-flash-lite-latest',    # Stable Lite alias
-                'gemini-2.0-flash-lite-001',   # Specific version
-                'gemini-1.5-flash'             # Old faithful (if available)
+                "gemini-2.5-flash",          # 🚀 The Newest/Fastest (You have this!)
+                "gemini-2.0-flash",          # Reliable Backup
+                "gemini-flash-latest",       # Generic Alias
+                "gemini-2.5-flash-lite",     # Ultra-fast
             ]
             
-            response = None
-            last_error = None
-            
+            success = False
             for model_name in candidate_models:
                 try:
-                    # print(f"DEBUG: Trying AI Model: {model_name}")
+                    # print(f"Trying model: {model_name}...")
                     response = client.models.generate_content(
-                        model=model_name,
+                        model=model_name, 
                         contents=system_prompt
                     )
                     if response.text:
+                        response_text = response.text
+                        success = True
                         break # Success!
                 except Exception as e:
-                    last_error = e
-                    # Continue to next model
-                    continue
+                    # print(f"Model {model_name} failed: {e}")
+                    continue 
             
-            if not response or not response.text:
-                print(f"All AI models failed. Last error: {last_error}")
-                raise ValueError("All AI models failed or quota exceeded.")
-                
-            return JsonResponse({'response': response.text, 'user': user.username})
-            
-        except ImportError:
-            print("Gemini API Error: google-genai module not installed.")
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            print(f"Gemini API Error (New SDK): {e}")
+            if not success:
+                response_text = "Error: Could not access any Gemini 2.5/2.0 models."
 
-    # --- 3. FALLBACK (Rule-based) ---
-    response_text = "I'm having trouble connecting to the neural net (API Error). Engaging backup protocols...<br>"
-    
-    if 'status' in query:
-        response_text += f"System Online. {stats_today} intrusions detected today."
-    elif 'latest' in query:
-        response_text += f"Last detection: {latest_info}."
-    else:
-        response_text += "I can only report Status and Latest detections in offline mode."
+        except Exception as e:
+            response_text = f"Connection Error: {str(e)[:50]}"
 
     return JsonResponse({'response': response_text, 'user': user.username})
